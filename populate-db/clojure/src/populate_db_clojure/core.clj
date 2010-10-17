@@ -1,10 +1,10 @@
 (ns populate-db-clojure.core
-  (:use [clojure.contrib.sql :as sql]
-        [clojure.contrib.string :as string :only [split trim join]])
-  (:import [java.io FileInputStream BufferedInputStream BufferedReader InputStreamReader File ByteArrayOutputStream]
+  (:use [clojure.contrib.sql]
+        [clojure.contrib.string :only [split]])
+  (:import [java.io FileInputStream BufferedInputStream BufferedReader InputStreamReader File ByteArrayInputStream]
            [java.util.zip GZIPInputStream]))
 
-;
+
 ; Example command to insert data contained in a mnist gzipped file in Jeff's converted format
 ; into the database:
 ;
@@ -14,7 +14,7 @@
 ;
 
 
-(defmacro dbg
+(defmacro dbg [x]
   "A debugging macro which prints the value of expressions which it wraps."
   `(let [x# ~x] (println '~x "=" x#) x#))
 
@@ -49,7 +49,7 @@
 
 (defn get-sql-insert-values [ixDataSet sCharacter iRows iCols bData]
   "Returns a vector containing values for a single character to be inserted into the Handwriting.Data table."
-  (vector nil ixDataSet sCharacter iRows iCols (ByteArrayOutputStream. bData)))
+  (vector nil ixDataSet sCharacter iRows iCols (ByteArrayInputStream. bData)))
 
 (defn sql-insert-characters-mnist
   "Inserts all character data from the gzipped MNIST file and inserts it into the database.
@@ -57,7 +57,7 @@
    character or digit that the file contains must be indicated. Optionally, a sql batch insert
    size can be provided for efficiency."
   ([file-name ixDataSet sCharacter]
-    (insert-characters-mnist file-name ixDataSet sCharacter 500))
+    (sql-insert-characters-mnist file-name ixDataSet sCharacter 500))
   ([file-name ixDataSet sCharacter batch-size]
     (with-open [^BufferedReader in (get-reader-gz file-name)]
       (let [rows (line-seq in)
