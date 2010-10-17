@@ -1,0 +1,20 @@
+# populate-db-clojure
+
+Clojure code to populate an SQL database with handwriting data.
+
+## Usage
+
+FIXME: write
+
+## Installation
+
+Code is available at http://code.google.com/p/csi701-group2/
+Leiningen (Clojure front-end for Maven) is available at http://github.com/technomancy/leiningen
+Leiningen requires no installaton. On linux simply download the script at http://github.com/technomancy/leiningen/raw/stable/bin/lein at place it on the path. Then run "lein deps" in this directory.
+Windows Leiningen installation instructions are available on the Leiningen site.
+
+## License
+
+GNU Lesser General Public License.
+
+Clojure distributed under the Eclipse Public License.
