@@ -4,6 +4,9 @@
 
 
 CREATE SCHEMA IF NOT EXISTS `Handwriting`;
+
+SHOW WARNINGS ;
+
 USE `Handwriting` ;
 
 -- -----------------------------------------------------
@@ -12,6 +15,8 @@ USE `Handwriting` ;
 -- Rows contain information about a source institution or website providing handwriting data.
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS Handwriting.Source ;
+
+SHOW WARNINGS ;
 
 -- ixSource unique integer identifier (primary key)
 -- sName name of institution or website providing DataSets
@@ -22,6 +27,7 @@ CREATE TABLE IF NOT EXISTS Handwriting.Source (
   sUrl VARCHAR(100) NULL ,
   PRIMARY KEY (ixSource) );
 
+SHOW WARNINGS ;
 
 -- -----------------------------------------------------
 -- Table Handwriting.DataSet
@@ -29,6 +35,8 @@ CREATE TABLE IF NOT EXISTS Handwriting.Source (
 -- Rows contain data about a set of handwriting data.
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS Handwriting.DataSet ;
+
+SHOW WARNINGS ;
 
 -- ixDataSet unique integer identifier (primary key)
 -- ixSource identifier of Source which provided this DataSet (foreign key)
@@ -43,6 +51,7 @@ CREATE TABLE IF NOT EXISTS Handwriting.DataSet (
   dtAccessTime DATETIME NULL ,
   PRIMARY KEY (ixDataSet) );
 
+SHOW WARNINGS ;
 
 -- -----------------------------------------------------
 -- Table Handwriting.Data
@@ -50,6 +59,8 @@ CREATE TABLE IF NOT EXISTS Handwriting.DataSet (
 -- Rows contain data relating to a single handwriting data sample.
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS Handwriting.Data ;
+
+SHOW WARNINGS ;
 
 -- ixData unique integer identifier of individual data sample (primary key)
 -- ixDataSet identifier of DataSet which provided this Data (foreign key)
@@ -66,6 +77,7 @@ CREATE TABLE IF NOT EXISTS Handwriting.Data (
   bData BLOB NOT NULL ,
   PRIMARY KEY (ixData) );
 
+SHOW WARNINGS ;
 
 -- -----------------------------------------------------
 -- Table Handwriting.Result
@@ -74,6 +86,8 @@ CREATE TABLE IF NOT EXISTS Handwriting.Data (
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS Handwriting.Result ;
 
+SHOW WARNINGS ;
+
 -- ixResult unique integer identifier of an in
 CREATE TABLE IF NOT EXISTS Handwriting.Result (
   ixResult INT(11) NOT NULL AUTO_INCREMENT ,
@@ -81,4 +95,6 @@ CREATE TABLE IF NOT EXISTS Handwriting.Result (
   sKey VARCHAR(50) NOT NULL ,
   sValue FLOAT(23) NULL ,
   PRIMARY KEY (ixResult)  );
+
+SHOW WARNINGS ;
 
