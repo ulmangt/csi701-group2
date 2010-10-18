@@ -12,7 +12,12 @@
 ; (with-connection db
 ;   (sql-insert-characters-mnist "/path/to/data/file.gz" 1 "a"))
 ;
-
+; Example command to select a individual data element from the database:
+;
+; (import 'java.util.Arrays)
+; (with-connection db
+;   (with-query-results rs ["SELECT * FROM Handwriting.Data WHERE Data.ixData = 1"]
+;     (doall (map #(println % (Arrays/toString (signed-to-unsigned-array! (:bdata %)))) rs))))
 
 (defmacro dbg [x]
   "A debugging macro which prints the value of expressions which it wraps."
@@ -32,6 +37,20 @@
 (defn get-reader-gz [^String file-name]
   "Returns a BufferedReader for the given gzipped file name."
   (-> file-name File. FileInputStream. GZIPInputStream. InputStreamReader. BufferedReader.))
+
+(defn signed-to-unsigned-array [signed-byte-array]
+  "The clojure.contrib.sql driver returns blob data as a signed byte array. However, the data
+   we are interested in is unsigned bytes. This function takes the returned byte array
+   and returns an array of integer representations of the unsigned bytes."
+  (let [size (alength signed-byte-array)
+        new-array (int-array size)]
+    (loop [i 0]
+      (if (< i size)
+        (let [old-val (aget signed-byte-array i)
+              new-val (if (< old-val 0) (+ old-val 256) old-val)]
+          (aset-int new-array i new-val)
+          (recur (inc i)))))
+    new-array))
 
 (defn unsigned-to-signed-byte [unsigned-byte]
   "Given an unsigned-byte (represented by a Java integer) on [0 255] returns
