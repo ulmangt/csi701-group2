@@ -6,18 +6,35 @@
 
 
 ; Example command to insert data contained in a mnist gzipped file in Jeff's converted format
-; into the database:
+; into the database (along with supporting entries in the Source and DataSet tables:
 ;
 ; (use 'clojure.contrib.sql)
+;
 ; (with-connection db
-;   (sql-insert-characters-mnist "/path/to/data/file.gz" 1 "a"))
+;   (insert-rows "Handwriting.Source" [1 "MNIST" "http://yann.lecun.com/exdb/mnist/"]))
+;
+; (with-connection db
+;   (insert-rows "Handwriting.DataSet" [1 1 "Training Set" "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" "2010-10-15 00:00:00"]))
+;
+; (with-connection db
+;   (do
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.0.a.txt.gz" 1 "0")
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.1.a.txt.gz" 1 "1")
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.2.a.txt.gz" 1 "2")
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.3.a.txt.gz" 1 "3")
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.4.a.txt.gz" 1 "4")
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.5.a.txt.gz" 1 "5")
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.6.a.txt.gz" 1 "6")
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.7.a.txt.gz" 1 "7")
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.8.a.txt.gz" 1 "8")
+;     (sql-insert-characters-mnist "/home/ulman/CSI710/project/data/mnist.9.a.txt.gz" 1 "9")))
 ;
 ; Example command to select a individual data element from the database:
 ;
 ; (import 'java.util.Arrays)
 ; (with-connection db
 ;   (with-query-results rs ["SELECT * FROM Handwriting.Data WHERE Data.ixData = 1"]
-;     (doall (map #(println % (Arrays/toString (signed-to-unsigned-array! (:bdata %)))) rs))))
+;     (doall (map #(println % (Arrays/toString (signed-to-unsigned-array (:bdata %)))) rs))))
 
 (defmacro dbg [x]
   "A debugging macro which prints the value of expressions which it wraps."
@@ -90,9 +107,3 @@
                  (map (fn [bData] (get-sql-insert-values ixDataSet sCharacter iRows iCols (read-character-string-mnist bData)))
                       row-batch)))
                row-batches ))))))
-
-; connect to database and run a simple query
-;(with-connection db
-;  (with-query-results rs ["show tables"]
-;    (dorun (map println rs))))
-
