@@ -110,7 +110,10 @@
                       row-batch)))
                row-batches ))))))
 
+(defn get-db-data [ixData]
+  (with-query-results rs ["SELECT * FROM Handwriting.Data WHERE Data.ixData = ?" ixData] rs))
+
 (defn print-db-data [ixData]
   (with-connection db
-    (with-query-results rs ["SELECT * FROM Handwriting.Data WHERE Data.ixData = ?" ixData]
+    (let [rs (get-db-data ixData)]  
       (doall (map #(println % (Arrays/toString (signed-to-unsigned-array (:bdata %)))) rs)))))
