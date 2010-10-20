@@ -21,6 +21,22 @@
 ;   (populate-db-mean-intensity (deref (analyze-mean-intensity "7")))
 ;   (populate-db-mean-intensity (deref (analyze-mean-intensity "8")))
 ;   (populate-db-mean-intensity (deref (analyze-mean-intensity "9"))))
+;
+; The database can then be used to calculate the average MeanIntensity for each character:
+
+; select Data.sCharacter, avg(Result.sValue) FROM Result, Data WHERE Data.ixData = Result.ixData and Result.sKey = "MeanIntensity" group by Data.sCharacter
+; 
+; character      mean intensity
+;     0              44.20
+;     1              19.43
+;     2              37.95
+;     3              36.13
+;     4              31.05
+;     5              32.95
+;     6              35.25
+;     7              29.24
+;     8              38.44
+;     9              31.43
 
 (defn populate-db-mean-intensity [result-map]
   (with-connection db
