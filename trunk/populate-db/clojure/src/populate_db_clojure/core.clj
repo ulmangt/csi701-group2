@@ -2,12 +2,14 @@
   (:use [clojure.contrib.sql]
         [clojure.contrib.string :only [split]])
   (:import [java.io FileInputStream BufferedInputStream BufferedReader InputStreamReader File ByteArrayInputStream]
-           [java.util.zip GZIPInputStream]))
+           [java.util.zip GZIPInputStream]
+           [java.util Arrays]))
 
 
 ; Example command to insert data contained in a mnist gzipped file in Jeff's converted format
 ; into the database (along with supporting entries in the Source and DataSet tables:
 ;
+; (use 'populate-db-clojure.core)
 ; (use 'clojure.contrib.sql)
 ;
 ; (with-connection db
@@ -107,3 +109,8 @@
                  (map (fn [bData] (get-sql-insert-values ixDataSet sCharacter iRows iCols (read-character-string-mnist bData)))
                       row-batch)))
                row-batches ))))))
+
+(defn print-db-data [ixData]
+  (with-connection db
+    (with-query-results rs ["SELECT * FROM Handwriting.Data WHERE Data.ixData = ?" ixData]
+      (doall (map #(println % (Arrays/toString (signed-to-unsigned-array (:bdata %)))) rs)))))
