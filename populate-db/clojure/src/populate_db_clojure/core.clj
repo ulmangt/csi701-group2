@@ -111,7 +111,7 @@
                row-batches ))))))
 
 (defn get-db-data [ixData]
-  (with-query-results rs ["SELECT * FROM Handwriting.Data WHERE Data.ixData = ?" ixData] rs))
+  (with-query-results rs ["SELECT * FROM Handwriting.Data WHERE Data.ixData = ?" ixData] (:bdata rs)))
 
 (defn print-db-data [ixData]
   (with-connection db
