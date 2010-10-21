@@ -50,5 +50,17 @@
          </menu>
       </menuContribution>
    </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="handwriting-viewer.application"
+            name="Handwriting Viewer">
+         <property
+               name="appName"
+               value="Handwriting Viewer">
+         </property>
+      </product>
+   </extension>
 
 </plugin>
