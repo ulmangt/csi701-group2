@@ -1,6 +1,7 @@
 package edu.gmu.csi.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -23,6 +24,11 @@ public class DataSet implements TreeNode
 		this.dtAccessTime = dtAccessTime;
 		
 		this.children = new ArrayList<Character>( );
+	}
+	
+	public void addChildren( Collection<Character> characters )
+	{
+		this.children.addAll( characters );
 	}
 	
 	public void addChild( Character character )

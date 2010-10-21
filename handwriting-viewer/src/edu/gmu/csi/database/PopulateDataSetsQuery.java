@@ -68,7 +68,9 @@ public class PopulateDataSetsQuery
 	}
 	
 	public void setResults( Source parent, ResultSet resultSet ) throws SQLException
-	{		
+	{
+		List<DataSet> result = new ArrayList<DataSet>( );
+		
 		while ( resultSet.next( ) )
 		{
 			int ixDataSet = resultSet.getInt( "ixDataSet" );
@@ -76,8 +78,11 @@ public class PopulateDataSetsQuery
 			String sUrl = resultSet.getString( "sUrl" );
 			Date dtAccessTime = resultSet.getDate( "dtAccessTime" );
 			
-			results.add( new DataSet( ixDataSet, parent, sDescription, sUrl, dtAccessTime ) );
+			result.add( new DataSet( ixDataSet, parent, sDescription, sUrl, dtAccessTime ) );
 		}
+		
+		parent.addChildren( result );
+		results.addAll( result );
 	}
 	
 	public List<DataSet> getResults( )

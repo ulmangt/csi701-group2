@@ -1,0 +1,46 @@
+package edu.gmu.csi.database;
+
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+
+import edu.gmu.csi.model.DataSet;
+import edu.gmu.csi.model.Root;
+import edu.gmu.csi.model.Source;
+import edu.gmu.csi.view.DataListView;
+
+public class PopulateDataListViewJob extends Job
+{
+	private DataListView view;
+
+	public PopulateDataListViewJob( DataListView view )
+	{
+		super( "Loading Database..." );
+		
+		this.view = view;
+	}
+
+	@Override
+	protected IStatus run( IProgressMonitor monitor )
+	{
+		Root root = new Root( "Handwriting" );
+		
+		PoulateSourcesQuery poulateSourcesQuery = new PoulateSourcesQuery( root );
+		poulateSourcesQuery.runQuery( );
+		List<Source> sourceList = poulateSourcesQuery.getResults( );
+		
+		PopulateDataSetsQuery populateDataSetsQuery = new PopulateDataSetsQuery( sourceList );
+		populateDataSetsQuery.runQuery( );
+		List<DataSet> dataSetList = populateDataSetsQuery.getResults( );
+		
+		PopulateCharacterAndDataQuery populateDataQuery = new PopulateCharacterAndDataQuery( dataSetList );
+		populateDataQuery.runQuery( );
+		
+		view.setRoot( root );
+		
+		return Status.OK_STATUS;
+	}
+}

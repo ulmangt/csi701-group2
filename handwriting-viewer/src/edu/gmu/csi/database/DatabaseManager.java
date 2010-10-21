@@ -44,5 +44,8 @@ public class DatabaseManager
 		
 		System.out.println( dataSetList );
 		
+		PopulateCharacterAndDataQuery populateDataQuery = new PopulateCharacterAndDataQuery( dataSetList );
+		populateDataQuery.runQuery( );
+		
 	}
 }
