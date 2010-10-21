@@ -2,9 +2,12 @@ package edu.gmu.csi.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.List;
+
+import edu.gmu.csi.model.DataSet;
+import edu.gmu.csi.model.Root;
+import edu.gmu.csi.model.Source;
 
 public class DatabaseManager
 {
@@ -15,38 +18,9 @@ public class DatabaseManager
 	private static final String user = "test";
 	private static final String pass = "csi710";
 
-	protected DatabaseManager( )
+	public Connection getConnection( ) throws SQLException
 	{
-		Connection connection = null;
-		Statement statement = null;
-		ResultSet resultSet = null;
-		
-		try
-		{
-			connection = DriverManager.getConnection( String.format( "jdbc:mysql://%s:%d", host, port ), user, pass );
-			statement = connection.createStatement( );
-			resultSet = statement.executeQuery( "SELECT * FROM Handwriting.Source" );
-			
-			while ( resultSet.next( ) )
-			{
-				int ixSource = resultSet.getInt( "ixSource" );
-				String sName = resultSet.getString( "sName" );
-				String sUrl = resultSet.getString( "sUrl" );
-				
-				System.out.printf( "%d %s %s%n", ixSource, sName, sUrl );
-			}
-			
-		}
-		catch ( SQLException e )
-		{
-			e.printStackTrace( );
-		}
-		finally
-		{
-			if ( resultSet != null ) try { resultSet.close( ); } catch ( SQLException e ) { }
-			if ( statement != null ) try { statement.close( ); } catch ( SQLException e ) { }
-			if ( connection != null ) try { connection.close( ); } catch ( SQLException e ) { }
-		}
+		return DriverManager.getConnection( String.format( "jdbc:mysql://%s:%d", host, port ), user, pass );
 	}
 
 	public static DatabaseManager getInstance( )
@@ -56,7 +30,19 @@ public class DatabaseManager
 	
 	public static void main( String[] args )
 	{
-		DatabaseManager.getInstance( );
+		Root root = new Root( "Handwriting" );
+		
+		PoulateSourcesQuery poulateSourcesQuery = new PoulateSourcesQuery( root );
+		poulateSourcesQuery.runQuery( );
+		List<Source> sourceList = poulateSourcesQuery.getResults( );
+		
+		System.out.println( sourceList );
+		
+		PopulateDataSetsQuery populateDataSetsQuery = new PopulateDataSetsQuery( sourceList );
+		populateDataSetsQuery.runQuery( );
+		List<DataSet> dataSetList = populateDataSetsQuery.getResults( );
+		
+		System.out.println( dataSetList );
+		
 	}
-
 }

@@ -6,14 +6,16 @@ import java.util.List;
 public class Source
 {
 	private int ixSource;
+	private Root parent;
 	private String sName;
 	private String sUrl;
 
 	private List<DataSet> children;
 	
-	public Source( int ixSource, String sName, String sUrl )
+	public Source( int ixSource, Root parent, String sName, String sUrl )
 	{
 		this.ixSource = ixSource;
+		this.parent = parent;
 		this.sName = sName;
 		this.sUrl = sUrl;
 		
@@ -28,6 +30,11 @@ public class Source
 	public List<DataSet> getChildren( )
 	{
 		return children;
+	}
+	
+	public Root getParent( )
+	{
+		return parent;
 	}
 	
 	public int getId( )
