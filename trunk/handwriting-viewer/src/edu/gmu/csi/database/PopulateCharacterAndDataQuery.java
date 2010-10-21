@@ -16,27 +16,27 @@ import edu.gmu.csi.model.DataSet;
 public class PopulateCharacterAndDataQuery
 {
 	private List<DataSet> parents;
-	
+
 	public PopulateCharacterAndDataQuery( List<DataSet> parents )
 	{
 		this.parents = parents;
 	}
-	
+
 	public String getQuery( )
 	{
-		return "SELECT ixData, sCharacter, iRows, iCols FROM Handwriting.Data WHERE Data.ixDataSet = ? AND Data.ixData < 200";
+		return "SELECT ixData, sCharacter, iRows, iCols FROM Handwriting.Data WHERE Data.ixDataSet = ?";
 	}
-	
+
 	public void runQuery( )
 	{
 		Connection connection = null;
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
-		
+
 		try
 		{
 			connection = DatabaseManager.getInstance( ).getConnection( );
-			
+
 			for ( DataSet dataSet : parents )
 			{
 				try
@@ -52,8 +52,20 @@ public class PopulateCharacterAndDataQuery
 				}
 				finally
 				{
-					if ( resultSet != null ) try { resultSet.close( ); } catch ( SQLException e ) { }
-					if ( statement != null ) try { statement.close( ); } catch ( SQLException e ) { }
+					if ( resultSet != null ) try
+					{
+						resultSet.close( );
+					}
+					catch ( SQLException e )
+					{
+					}
+					if ( statement != null ) try
+					{
+						statement.close( );
+					}
+					catch ( SQLException e )
+					{
+					}
 				}
 			}
 		}
@@ -63,31 +75,37 @@ public class PopulateCharacterAndDataQuery
 		}
 		finally
 		{
-			if ( connection != null ) try { connection.close( ); } catch ( SQLException e ) { }
+			if ( connection != null ) try
+			{
+				connection.close( );
+			}
+			catch ( SQLException e )
+			{
+			}
 		}
 	}
-	
+
 	public void setResults( DataSet parent, ResultSet resultSet ) throws SQLException
 	{
-		Map<String,Character> characters = new HashMap<String,Character>( );
-		
+		Map<String, Character> characters = new HashMap<String, Character>( );
+
 		while ( resultSet.next( ) )
 		{
 			int ixData = resultSet.getInt( "ixData" );
 			String sCharacter = resultSet.getString( "sCharacter" );
 			int iRows = resultSet.getInt( "iRows" );
 			int iCols = resultSet.getInt( "iCols" );
-			
+
 			Character character = characters.get( sCharacter );
 			if ( character == null )
 			{
 				character = new Character( parent, sCharacter );
 				characters.put( sCharacter, character );
 			}
-			
+
 			character.addChild( new Data( ixData, character, sCharacter, iRows, iCols ) );
 		}
-		
+
 		parent.addChildren( characters.values( ) );
 	}
 }

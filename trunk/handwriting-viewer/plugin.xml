@@ -24,7 +24,7 @@
       <view
             class="edu.gmu.csi.view.DataListView"
             id="handwriting-viewer.datalistview"
-            name="DataListView"
+            name="Database View"
             restorable="true">
       </view>
       <view

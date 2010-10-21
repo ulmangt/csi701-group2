@@ -24,33 +24,33 @@ public class CharacterImageView extends ViewPart
 
 	private Canvas canvas;
 	private CharacterImagePainter painter;
-	
+
 	private PaletteData palette;
-	
+
 	public CharacterImageView( )
 	{
-	    RGB[] colors = new RGB[256];
-	    for ( int i = 0 ; i < 256 ; i++ )
-	    {
-	    	int color = 255-i;
-	    	colors[i] = new RGB(color,color,color);
-	    }
-	    
-	    palette = new PaletteData( colors );
+		RGB[] colors = new RGB[256];
+		for ( int i = 0; i < 256; i++ )
+		{
+			int color = 255 - i;
+			colors[i] = new RGB( color, color, color );
+		}
+
+		palette = new PaletteData( colors );
 	}
-	
+
 	private class CharacterImagePainter implements PaintListener
 	{
 		private volatile boolean imageChanged;
 		private ReentrantLock imageLock;
 		private Image newImage;
 		private Image displayImage;
-		
+
 		public CharacterImagePainter( )
 		{
 			imageLock = new ReentrantLock( );
 		}
-		
+
 		public void setImage( Image _image )
 		{
 			imageLock.lock( );
@@ -64,16 +64,16 @@ public class CharacterImageView extends ViewPart
 				imageLock.unlock( );
 			}
 		}
-		
+
 		@Override
 		public void paintControl( PaintEvent e )
 		{
 			Point p = canvas.getSize( );
 			int width = p.x;
 			int height = p.y;
-			
+
 			GC gc = e.gc;
-			
+
 			if ( imageChanged )
 			{
 				imageLock.lock( );
@@ -89,33 +89,31 @@ public class CharacterImageView extends ViewPart
 				}
 			}
 
-			gc.drawLine( 0, 0, width, height );
-			
 			if ( displayImage != null )
 			{
 				gc.drawImage( displayImage, 0, 0, 28, 28, 0, 0, width, height );
 			}
 		}
 	}
-	
+
 	public void setImage( CharacterData data )
 	{
 		setImage( createImage( data ) );
 	}
-	
+
 	public void setImage( Image image )
 	{
 		painter.setImage( image );
 		canvas.redraw( );
 	}
-	
+
 	public Image createImage( CharacterData data )
 	{
 		Display display = Display.getDefault( );
-	    ImageData sourceData = new ImageData( data.getImageColumns( ), data.getImageRows( ), 8, palette, 1, data.getImageData( ) );
-	    return new Image(display, sourceData);
+		ImageData sourceData = new ImageData( data.getImageColumns( ), data.getImageRows( ), 8, palette, 1, data.getImageData( ) );
+		return new Image( display, sourceData );
 	}
-	
+
 	@Override
 	public void createPartControl( Composite parent )
 	{
@@ -123,11 +121,10 @@ public class CharacterImageView extends ViewPart
 		painter = new CharacterImagePainter( );
 		canvas.addPaintListener( painter );
 	}
-	
+
 	@Override
 	public void setFocus( )
 	{
 		// TODO Auto-generated method stub
-		
 	}
 }

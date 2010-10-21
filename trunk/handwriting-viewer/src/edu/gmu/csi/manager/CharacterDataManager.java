@@ -19,35 +19,35 @@ import edu.gmu.csi.model.data.CharacterData;
 public class CharacterDataManager
 {
 	private static final CharacterDataManager instance = new CharacterDataManager( );
-	
+
 	private Map<Data, SoftReference<CharacterData>> characterDataMap;
 	private Connection connection;
-	
+
 	public CharacterDataManager( )
 	{
 		characterDataMap = Collections.synchronizedMap( new HashMap<Data, SoftReference<CharacterData>>( ) );
-		
+
 		try
 		{
 			connection = DatabaseManager.getInstance( ).getConnection( );
 		}
 		catch ( SQLException e )
 		{
-			e.printStackTrace();
+			e.printStackTrace( );
 		}
 	}
-	
+
 	public static CharacterDataManager getInstance( )
 	{
 		return instance;
 	}
-	
+
 	public CharacterData getCharacterData( Data data )
 	{
 		SoftReference<CharacterData> dataRef = characterDataMap.get( data );
-		
+
 		CharacterData characterData = null;
-		
+
 		if ( dataRef == null )
 		{
 			characterData = queryCharacterData( data );
@@ -57,7 +57,7 @@ public class CharacterDataManager
 		else
 		{
 			characterData = dataRef.get( );
-			
+
 			if ( data == null )
 			{
 				characterData = queryCharacterData( data );
@@ -70,22 +70,22 @@ public class CharacterDataManager
 			}
 		}
 	}
-	
+
 	public synchronized CharacterData queryCharacterData( Data data )
 	{
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
-		
+
 		try
 		{
 			statement = connection.prepareStatement( "SELECT Data.bData FROM Handwriting.Data WHERE Data.ixData = ?" );
 			statement.setInt( 1, data.getId( ) );
 			resultSet = statement.executeQuery( );
-			
+
 			if ( resultSet.next( ) )
 			{
 				InputStream stream = new DataInputStream( new BufferedInputStream( resultSet.getBinaryStream( 1 ) ) );
-				
+
 				/*
 				int expected = data.getCols( ) * data.getRows( );
 				int index = 0;
@@ -104,14 +104,14 @@ public class CharacterDataManager
 					System.out.printf( "Expected %d data values. Received only %d data values.", expected, index );
 				}
 				*/
-				
+
 				int expected = data.getCols( ) * data.getRows( );
 				int index = 0;
 				int remaining = expected;
-				byte imageData[] = new byte[ expected ];
-				
+				byte imageData[] = new byte[expected];
+
 				try
-				{					
+				{
 					while ( remaining > 0 )
 					{
 						int read = stream.read( imageData, index, remaining );
@@ -121,11 +121,10 @@ public class CharacterDataManager
 				}
 				catch ( IOException e )
 				{
-					e.printStackTrace();
+					e.printStackTrace( );
 					System.out.printf( "Expected %d data values. Received only %d data values.", expected, index );
 				}
-				
-				
+
 				return new CharacterData( data, imageData );
 			}
 		}
@@ -135,10 +134,22 @@ public class CharacterDataManager
 		}
 		finally
 		{
-			if ( resultSet != null ) try { resultSet.close( ); } catch ( SQLException e ) { }
-			if ( statement != null ) try { statement.close( ); } catch ( SQLException e ) { }
+			if ( resultSet != null ) try
+			{
+				resultSet.close( );
+			}
+			catch ( SQLException e )
+			{
+			}
+			if ( statement != null ) try
+			{
+				statement.close( );
+			}
+			catch ( SQLException e )
+			{
+			}
 		}
-		
+
 		return null;
 	}
 }

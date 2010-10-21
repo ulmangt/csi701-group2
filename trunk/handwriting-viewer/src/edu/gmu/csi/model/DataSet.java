@@ -12,9 +12,9 @@ public class DataSet implements TreeNode
 	private String sDescription;
 	private String sUrl;
 	private Date dtAccessTime;
-	
+
 	private List<Character> children;
-	
+
 	public DataSet( int ixDataSet, Source ixSource, String sDescription, String sUrl, Date dtAccessTime )
 	{
 		this.ixDataSet = ixDataSet;
@@ -22,20 +22,20 @@ public class DataSet implements TreeNode
 		this.sDescription = sDescription;
 		this.sUrl = sUrl;
 		this.dtAccessTime = dtAccessTime;
-		
+
 		this.children = new ArrayList<Character>( );
 	}
-	
+
 	public void addChildren( Collection<Character> characters )
 	{
 		this.children.addAll( characters );
 	}
-	
+
 	public void addChild( Character character )
 	{
 		this.children.add( character );
 	}
-	
+
 	public List<Character> getCharacterList( )
 	{
 		return children;
@@ -60,13 +60,13 @@ public class DataSet implements TreeNode
 	{
 		return dtAccessTime;
 	}
-	
+
 	@Override
 	public String toString( )
 	{
 		return String.format( "[%d] %s", ixDataSet, sDescription );
 	}
-	
+
 	@Override
 	public Source getParent( )
 	{
@@ -78,7 +78,7 @@ public class DataSet implements TreeNode
 	{
 		return !getCharacterList( ).isEmpty( );
 	}
-	
+
 	@Override
 	public Object[] getChildren( )
 	{

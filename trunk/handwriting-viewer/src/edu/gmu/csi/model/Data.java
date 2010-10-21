@@ -16,7 +16,7 @@ public class Data implements TreeNode
 		this.iRows = iRows;
 		this.iCols = iCols;
 	}
-	
+
 	public int getId( )
 	{
 		return ixData;
@@ -36,13 +36,13 @@ public class Data implements TreeNode
 	{
 		return iCols;
 	}
-	
+
 	@Override
 	public String toString( )
 	{
 		return String.format( "[%d] %s", ixData, sCharacter );
 	}
-	
+
 	@Override
 	public Character getParent( )
 	{
