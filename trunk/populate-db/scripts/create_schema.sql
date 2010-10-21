@@ -98,3 +98,6 @@ CREATE TABLE IF NOT EXISTS Handwriting.Result (
 
 SHOW WARNINGS ;
 
+CREATE UNIQUE INDEX ResultKeyIndex ON Handwriting.Result (sKey,ixData);
+
+SHOW WARNINGS ;
