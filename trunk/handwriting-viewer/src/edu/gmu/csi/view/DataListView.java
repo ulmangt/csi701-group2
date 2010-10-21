@@ -15,7 +15,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.PlatformUI;
 
 import edu.gmu.csi.database.PopulateDataListViewJob;
 import edu.gmu.csi.manager.CharacterDataManager;
@@ -158,8 +160,23 @@ public class DataListView extends ViewPart
 
 	private class DataListLabelProvider extends LabelProvider
 	{
+		Image categoryImage = PlatformUI.getWorkbench( ).getSharedImages( ).getImage( ISharedImages.IMG_OBJ_ELEMENT );
+		Image dataImage = PlatformUI.getWorkbench( ).getSharedImages( ).getImage( ISharedImages.IMG_OBJ_FILE );
+		
 		public Image getImage( Object element )
 		{
+			if ( element instanceof TreeNode )
+			{
+				if ( element instanceof Data )
+				{
+					return dataImage;
+				}
+				else
+				{
+					return categoryImage;
+				}
+			}
+			
 			return null;
 		}
 
