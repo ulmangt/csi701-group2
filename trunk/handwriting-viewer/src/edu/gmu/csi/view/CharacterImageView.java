@@ -17,6 +17,8 @@ public class CharacterImageView extends ViewPart
 	{
 		final Canvas canvas = new Canvas( parent, SWT.DOUBLE_BUFFERED );
 		
+		
+		
 		canvas.addPaintListener( new PaintListener( )
 		{
 			@Override

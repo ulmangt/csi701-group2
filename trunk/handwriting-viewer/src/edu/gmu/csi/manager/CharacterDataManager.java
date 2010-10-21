@@ -78,7 +78,7 @@ public class CharacterDataManager
 		
 		try
 		{
-			statement = connection.prepareStatement( "SELECT dData FROM Handwriting.Data WHERE Data.ixData = ?" );
+			statement = connection.prepareStatement( "SELECT Data.bData FROM Handwriting.Data WHERE Data.ixData = ?" );
 			statement.setInt( 1, data.getId( ) );
 			resultSet = statement.executeQuery( );
 			
