@@ -2,6 +2,7 @@ package edu.gmu.csi.view;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -16,7 +17,11 @@ import org.eclipse.ui.part.ViewPart;
 
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IViewReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 import edu.gmu.csi.database.PopulateDataListViewJob;
@@ -67,7 +72,11 @@ public class DataListView extends ViewPart
 							CharacterData characterData = CharacterDataManager.getInstance( ).getCharacterData( data );
 							
 							if ( characterData != null )
+							{
 								System.out.println( Arrays.toString( characterData.getImageData( ) ) );
+								System.out.println( characterData.getImageColumns( ) + " " + characterData.getImageRows( ) );
+								getCharacterImageView( ).setImage( characterData );
+							}
 						}
 					}
 				}
@@ -81,6 +90,33 @@ public class DataListView extends ViewPart
 
 		siteService.showInDialog( site.getShell( ), job );
 		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
+	}
+	
+	protected CharacterImageView getCharacterImageView( )
+	{
+		IWorkbench workbench = PlatformUI.getWorkbench( );
+		if ( workbench == null )
+			return null;
+		
+		IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow( );
+		if ( workbenchWindow == null )
+			return null;
+		
+		IWorkbenchPage workbenchPage = workbenchWindow.getActivePage( );
+		if ( workbenchPage == null )
+			return null;
+		
+		List<IViewReference> viewRefList = Arrays.asList( workbenchPage.getViewReferences( ) );
+		
+		for ( IViewReference viewRef : viewRefList )
+		{
+			if ( CharacterImageView.ID.equals( viewRef.getId( ) ) )
+			{
+				return ( CharacterImageView ) viewRef.getView( false );
+			}
+		}
+		
+		return null;
 	}
 
 	public void setRoot( Root root )
