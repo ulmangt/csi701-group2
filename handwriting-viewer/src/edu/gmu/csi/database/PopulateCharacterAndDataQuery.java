@@ -71,8 +71,6 @@ public class PopulateCharacterAndDataQuery
 	{
 		Map<String,Character> characters = new HashMap<String,Character>( );
 		
-		int i = 0;
-		
 		while ( resultSet.next( ) )
 		{
 			int ixData = resultSet.getInt( "ixData" );

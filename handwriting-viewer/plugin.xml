@@ -27,6 +27,12 @@
             name="DataListView"
             restorable="true">
       </view>
+      <view
+            class="edu.gmu.csi.view.CharacterImageView"
+            id="handwriting-viewer.characterimageview"
+            name="Image View"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">

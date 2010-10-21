@@ -86,9 +86,10 @@ public class CharacterDataManager
 			{
 				InputStream stream = new DataInputStream( new BufferedInputStream( resultSet.getBinaryStream( 1 ) ) );
 				
+				/*
 				int expected = data.getCols( ) * data.getRows( );
 				int index = 0;
-				int[] imageData = new int[ data.getCols( ) * data.getRows( ) ];
+				int[] imageData = new int[ expected ];
 				
 				try
 				{
@@ -102,6 +103,28 @@ public class CharacterDataManager
 					e.printStackTrace();
 					System.out.printf( "Expected %d data values. Received only %d data values.", expected, index );
 				}
+				*/
+				
+				int expected = data.getCols( ) * data.getRows( );
+				int index = 0;
+				int remaining = expected;
+				byte imageData[] = new byte[ expected ];
+				
+				try
+				{					
+					while ( remaining > 0 )
+					{
+						int read = stream.read( imageData, index, remaining );
+						index += read;
+						remaining -= read;
+					}
+				}
+				catch ( IOException e )
+				{
+					e.printStackTrace();
+					System.out.printf( "Expected %d data values. Received only %d data values.", expected, index );
+				}
+				
 				
 				return new CharacterData( data, imageData );
 			}

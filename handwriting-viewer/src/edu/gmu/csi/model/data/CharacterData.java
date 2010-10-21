@@ -5,9 +5,9 @@ import edu.gmu.csi.model.Data;
 public class CharacterData
 {
 	private Data data;
-	private int[] dataArray;
+	private byte[] dataArray;
 	
-	public CharacterData( Data data, int[] dataArray )
+	public CharacterData( Data data, byte[] dataArray )
 	{
 		this.data = data;
 		this.dataArray = dataArray;
@@ -18,7 +18,7 @@ public class CharacterData
 		return data;
 	}
 	
-	public int[] getImageData( )
+	public byte[] getImageData( )
 	{
 		return dataArray;
 	}
