@@ -41,7 +41,7 @@ public class Character implements TreeNode
 	}
 
 	@Override
-	public boolean hasChildren( Object element )
+	public boolean hasChildren( )
 	{
 		return !getDataList( ).isEmpty( );
 	}

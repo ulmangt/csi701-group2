@@ -68,7 +68,7 @@ public class DataSet implements TreeNode
 	}
 
 	@Override
-	public boolean hasChildren( Object element )
+	public boolean hasChildren( )
 	{
 		return !getCharacterList( ).isEmpty( );
 	}
