@@ -75,9 +75,6 @@ public class PopulateCharacterAndDataQuery
 		
 		while ( resultSet.next( ) )
 		{
-			if ( i++ % 100 == 0 )
-				System.out.println( "PopulateCharacterAndDataQuery Count: " + i );
-			
 			int ixData = resultSet.getInt( "ixData" );
 			String sCharacter = resultSet.getString( "sCharacter" );
 			int iRows = resultSet.getInt( "iRows" );

@@ -3,13 +3,6 @@ package edu.gmu.csi.manager;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
-
-import edu.gmu.csi.database.PopulateDataSetsQuery;
-import edu.gmu.csi.database.PoulateSourcesQuery;
-import edu.gmu.csi.model.DataSet;
-import edu.gmu.csi.model.Root;
-import edu.gmu.csi.model.Source;
 
 public class DatabaseManager
 {
@@ -28,26 +21,5 @@ public class DatabaseManager
 	public static DatabaseManager getInstance( )
 	{
 		return instance;
-	}
-	
-	public static void main( String[] args )
-	{
-		Root root = new Root( "Handwriting" );
-		
-		PoulateSourcesQuery poulateSourcesQuery = new PoulateSourcesQuery( root );
-		poulateSourcesQuery.runQuery( );
-		List<Source> sourceList = poulateSourcesQuery.getResults( );
-		
-		System.out.println( sourceList );
-		
-		PopulateDataSetsQuery populateDataSetsQuery = new PopulateDataSetsQuery( sourceList );
-		populateDataSetsQuery.runQuery( );
-		List<DataSet> dataSetList = populateDataSetsQuery.getResults( );
-		
-		System.out.println( dataSetList );
-		
-//		PopulateCharacterAndDataQuery populateDataQuery = new PopulateCharacterAndDataQuery( dataSetList );
-//		populateDataQuery.runQuery( );
-		
 	}
 }
