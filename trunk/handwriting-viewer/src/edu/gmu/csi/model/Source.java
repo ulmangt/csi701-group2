@@ -1,6 +1,7 @@
 package edu.gmu.csi.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Source implements TreeNode
@@ -20,6 +21,11 @@ public class Source implements TreeNode
 		this.sUrl = sUrl;
 		
 		this.children = new ArrayList<DataSet>( );
+	}
+	
+	public void addChildren( Collection<DataSet> dataSets )
+	{
+		this.children.addAll( dataSets );
 	}
 	
 	public void addChild( DataSet dataSet )

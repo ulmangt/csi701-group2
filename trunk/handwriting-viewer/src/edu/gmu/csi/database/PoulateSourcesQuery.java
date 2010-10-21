@@ -37,6 +37,8 @@ public class PoulateSourcesQuery extends DatabaseQuery
 			
 			results.add( new Source( ixSource, parent, sName, sUrl ) );
 		}
+		
+		parent.addChildren( results );
 	}
 	
 	public List<Source> getResults( )

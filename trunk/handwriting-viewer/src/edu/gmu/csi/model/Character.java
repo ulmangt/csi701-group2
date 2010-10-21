@@ -1,6 +1,7 @@
 package edu.gmu.csi.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Character implements TreeNode
@@ -17,6 +18,11 @@ public class Character implements TreeNode
 		
 		this.children = new ArrayList<Data>( );
 
+	}
+	
+	public void addChildren( Collection<Data> data )
+	{
+		this.children.addAll( data );
 	}
 	
 	public void addChild( Data data )

@@ -8,6 +8,11 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 
+import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
+import org.eclipse.ui.IWorkbenchPartSite;
+
+import edu.gmu.csi.database.PopulateDataListViewJob;
+import edu.gmu.csi.model.Root;
 import edu.gmu.csi.model.TreeNode;
 
 public class DataListView extends ViewPart
@@ -28,21 +33,29 @@ public class DataListView extends ViewPart
 
 		treeViewer.setContentProvider( new DataListContentProvider( ) );
 		treeViewer.setLabelProvider( new DataListLabelProvider( ) );
-		treeViewer.setInput( getInitialInput( ) );
 
 		treeViewer.expandAll( );
-	}
 
+		IWorkbenchPartSite site = getSite( );
+		IWorkbenchSiteProgressService siteService = ( IWorkbenchSiteProgressService ) site.getAdapter( IWorkbenchSiteProgressService.class );
+		
+		PopulateDataListViewJob job = new PopulateDataListViewJob( this );
+		
+		siteService.showInDialog( site.getShell( ), job );
+		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
+
+	}
+	
+	public void setRoot( Root root )
+	{
+		treeViewer.setInput( root );
+	}
+		
 	@Override
 	public void setFocus( )
 	{
 		// TODO Auto-generated method stub
 
-	}
-
-	private Object getInitialInput( )
-	{
-		return null;
 	}
 
 	private class DataListContentProvider implements ITreeContentProvider
