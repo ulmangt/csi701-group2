@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class DataSet
+public class DataSet implements TreeNode
 {
 	private int ixDataSet;
 	private Source ixSource;
@@ -30,7 +30,7 @@ public class DataSet
 		this.children.add( character );
 	}
 	
-	public List<Character> getChildren( )
+	public List<Character> getCharacterList( )
 	{
 		return children;
 	}
@@ -38,11 +38,6 @@ public class DataSet
 	public int getId( )
 	{
 		return ixDataSet;
-	}
-
-	public Source getParent( )
-	{
-		return ixSource;
 	}
 
 	public String getDescription( )
@@ -64,5 +59,23 @@ public class DataSet
 	public String toString( )
 	{
 		return String.format( "[%d] %s", ixDataSet, sDescription );
+	}
+	
+	@Override
+	public Source getParent( )
+	{
+		return ixSource;
+	}
+
+	@Override
+	public boolean hasChildren( Object element )
+	{
+		return !getCharacterList( ).isEmpty( );
+	}
+	
+	@Override
+	public Object[] getChildren( )
+	{
+		return getCharacterList( ).toArray( );
 	}
 }

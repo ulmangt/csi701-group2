@@ -3,16 +3,16 @@ package edu.gmu.csi.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Character
+public class Character implements TreeNode
 {
-	private int ixDataSet;
+	private DataSet dataSet;
 	private String sCharacter;
 	
 	private List<Data> children;
 
-	public Character( int ixDataSet, String sCharacter )
+	public Character( DataSet dataSet, String sCharacter )
 	{
-		this.ixDataSet = ixDataSet;
+		this.dataSet = dataSet;
 		this.sCharacter = sCharacter;
 		
 		this.children = new ArrayList<Data>( );
@@ -24,14 +24,9 @@ public class Character
 		this.children.add( data );
 	}
 	
-	public List<Data> getChildren( )
+	public List<Data> getDataList( )
 	{
 		return children;
-	}
-	
-	public int getParent( )
-	{
-		return ixDataSet;
 	}
 
 	public String getCharacter( )
@@ -43,5 +38,23 @@ public class Character
 	public String toString( )
 	{
 		return String.format( "%s", sCharacter );
+	}
+
+	@Override
+	public boolean hasChildren( Object element )
+	{
+		return !getDataList( ).isEmpty( );
+	}
+	
+	@Override
+	public DataSet getParent( )
+	{
+		return dataSet;
+	}
+
+	@Override
+	public Object[] getChildren( )
+	{
+		return getDataList( ).toArray( );
 	}
 }
