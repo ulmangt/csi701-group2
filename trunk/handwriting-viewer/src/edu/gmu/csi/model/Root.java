@@ -44,7 +44,7 @@ public class Root implements TreeNode
 	}
 
 	@Override
-	public boolean hasChildren( Object element )
+	public boolean hasChildren( )
 	{
 		return !getSourceList( ).isEmpty( );
 	}

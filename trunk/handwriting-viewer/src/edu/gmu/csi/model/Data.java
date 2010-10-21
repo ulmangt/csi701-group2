@@ -56,7 +56,7 @@ public class Data implements TreeNode
 	}
 
 	@Override
-	public boolean hasChildren( Object element )
+	public boolean hasChildren( )
 	{
 		return false;
 	}

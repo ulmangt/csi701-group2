@@ -60,7 +60,7 @@ public class Source implements TreeNode
 	}
 
 	@Override
-	public boolean hasChildren( Object element )
+	public boolean hasChildren( )
 	{
 		return !getDataSetList( ).isEmpty( );
 	}
