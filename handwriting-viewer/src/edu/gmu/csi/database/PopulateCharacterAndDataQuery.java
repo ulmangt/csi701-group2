@@ -23,7 +23,7 @@ public class PopulateCharacterAndDataQuery
 	
 	public String getQuery( )
 	{
-		return "SELECT ixData, sCharacter, iRows, iCols FROM Handwriting.Data WHERE Data.ixDataSource = ?";
+		return "SELECT ixData, sCharacter, iRows, iCols FROM Handwriting.Data WHERE Data.ixDataSet = ?";
 	}
 	
 	public void runQuery( )

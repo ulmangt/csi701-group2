@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.widgets.Display;
 
 import edu.gmu.csi.model.DataSet;
 import edu.gmu.csi.model.Root;
@@ -26,7 +27,7 @@ public class PopulateDataListViewJob extends Job
 	@Override
 	protected IStatus run( IProgressMonitor monitor )
 	{
-		Root root = new Root( "Handwriting" );
+		final Root root = new Root( "Handwriting" );
 		
 		PoulateSourcesQuery poulateSourcesQuery = new PoulateSourcesQuery( root );
 		poulateSourcesQuery.runQuery( );
@@ -39,7 +40,13 @@ public class PopulateDataListViewJob extends Job
 		PopulateCharacterAndDataQuery populateDataQuery = new PopulateCharacterAndDataQuery( dataSetList );
 		populateDataQuery.runQuery( );
 		
-		view.setRoot( root );
+		Display.getDefault( ).asyncExec( new Runnable( )
+		{
+			public void run( )
+			{
+				view.setRoot( root );
+			}
+		} );
 		
 		return Status.OK_STATUS;
 	}
