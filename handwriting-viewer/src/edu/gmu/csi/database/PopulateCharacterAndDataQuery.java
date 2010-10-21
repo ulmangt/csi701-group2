@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.gmu.csi.manager.DatabaseManager;
 import edu.gmu.csi.model.Character;
 import edu.gmu.csi.model.Data;
 import edu.gmu.csi.model.DataSet;
