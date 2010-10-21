@@ -22,23 +22,14 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            name="View"
-            class="edu.gmu.csi.View"
-            id="handwriting-viewer.view">
+            class="edu.gmu.csi.view.DataListView"
+            id="handwriting-viewer.datalistview"
+            name="DataListView"
+            restorable="true">
       </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension
-            targetID="*">
-         <view
-               standalone="true"
-               minimized="false"
-               relative="org.eclipse.ui.editorss"
-               relationship="left"
-               id="handwriting-viewer.view">
-         </view>
-      </perspectiveExtension>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
