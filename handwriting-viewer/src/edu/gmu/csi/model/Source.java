@@ -3,7 +3,7 @@ package edu.gmu.csi.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Source
+public class Source implements TreeNode
 {
 	private int ixSource;
 	private Root parent;
@@ -27,14 +27,9 @@ public class Source
 		this.children.add( dataSet );
 	}
 	
-	public List<DataSet> getChildren( )
+	public List<DataSet> getDataSetList( )
 	{
 		return children;
-	}
-	
-	public Root getParent( )
-	{
-		return parent;
 	}
 	
 	public int getId( )
@@ -56,5 +51,23 @@ public class Source
 	public String toString( )
 	{
 		return String.format( "[%d] %s", ixSource, sName );
+	}
+	
+	@Override
+	public Root getParent( )
+	{
+		return parent;
+	}
+
+	@Override
+	public boolean hasChildren( Object element )
+	{
+		return !getDataSetList( ).isEmpty( );
+	}
+
+	@Override
+	public Object[] getChildren( )
+	{
+		return getDataSetList( ).toArray( );
 	}
 }
