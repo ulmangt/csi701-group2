@@ -1,10 +1,12 @@
-package edu.gmu.csi.database;
+package edu.gmu.csi.manager;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 
+import edu.gmu.csi.database.PopulateDataSetsQuery;
+import edu.gmu.csi.database.PoulateSourcesQuery;
 import edu.gmu.csi.model.DataSet;
 import edu.gmu.csi.model.Root;
 import edu.gmu.csi.model.Source;
