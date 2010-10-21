@@ -24,7 +24,7 @@ public class PopulateCharacterAndDataQuery
 	
 	public String getQuery( )
 	{
-		return "SELECT ixData, sCharacter, iRows, iCols FROM Handwriting.Data WHERE Data.ixDataSet = ?";
+		return "SELECT ixData, sCharacter, iRows, iCols FROM Handwriting.Data WHERE Data.ixDataSet = ? AND Data.ixData < 200";
 	}
 	
 	public void runQuery( )
