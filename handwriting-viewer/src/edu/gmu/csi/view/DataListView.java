@@ -65,16 +65,14 @@ public class DataListView extends ViewPart
 					for ( Iterator iterator = selection.iterator( ); iterator.hasNext( ); )
 					{
 						TreeNode treeNode = ( TreeNode ) iterator.next( );
-						
+
 						if ( treeNode instanceof Data )
 						{
-							Data data = (Data) treeNode;
+							Data data = ( Data ) treeNode;
 							CharacterData characterData = CharacterDataManager.getInstance( ).getCharacterData( data );
-							
+
 							if ( characterData != null )
 							{
-								System.out.println( Arrays.toString( characterData.getImageData( ) ) );
-								System.out.println( characterData.getImageColumns( ) + " " + characterData.getImageRows( ) );
 								getCharacterImageView( ).setImage( characterData );
 							}
 						}
@@ -91,23 +89,20 @@ public class DataListView extends ViewPart
 		siteService.showInDialog( site.getShell( ), job );
 		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
 	}
-	
+
 	protected CharacterImageView getCharacterImageView( )
 	{
 		IWorkbench workbench = PlatformUI.getWorkbench( );
-		if ( workbench == null )
-			return null;
-		
+		if ( workbench == null ) return null;
+
 		IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow( );
-		if ( workbenchWindow == null )
-			return null;
-		
+		if ( workbenchWindow == null ) return null;
+
 		IWorkbenchPage workbenchPage = workbenchWindow.getActivePage( );
-		if ( workbenchPage == null )
-			return null;
-		
+		if ( workbenchPage == null ) return null;
+
 		List<IViewReference> viewRefList = Arrays.asList( workbenchPage.getViewReferences( ) );
-		
+
 		for ( IViewReference viewRef : viewRefList )
 		{
 			if ( CharacterImageView.ID.equals( viewRef.getId( ) ) )
@@ -115,13 +110,15 @@ public class DataListView extends ViewPart
 				return ( CharacterImageView ) viewRef.getView( false );
 			}
 		}
-		
+
 		return null;
 	}
 
 	public void setRoot( Root root )
 	{
 		treeViewer.setInput( root );
+		
+		treeViewer.expandToLevel( 3 );
 	}
 
 	@Override
@@ -198,7 +195,7 @@ public class DataListView extends ViewPart
 	{
 		Image categoryImage = PlatformUI.getWorkbench( ).getSharedImages( ).getImage( ISharedImages.IMG_OBJ_ELEMENT );
 		Image dataImage = PlatformUI.getWorkbench( ).getSharedImages( ).getImage( ISharedImages.IMG_OBJ_FILE );
-		
+
 		public Image getImage( Object element )
 		{
 			if ( element instanceof TreeNode )
@@ -212,7 +209,7 @@ public class DataListView extends ViewPart
 					return categoryImage;
 				}
 			}
-			
+
 			return null;
 		}
 

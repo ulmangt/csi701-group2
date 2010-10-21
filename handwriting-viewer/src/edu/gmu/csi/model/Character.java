@@ -8,28 +8,28 @@ public class Character implements TreeNode
 {
 	private DataSet dataSet;
 	private String sCharacter;
-	
+
 	private List<Data> children;
 
 	public Character( DataSet dataSet, String sCharacter )
 	{
 		this.dataSet = dataSet;
 		this.sCharacter = sCharacter;
-		
+
 		this.children = new ArrayList<Data>( );
 
 	}
-	
+
 	public void addChildren( Collection<Data> data )
 	{
 		this.children.addAll( data );
 	}
-	
+
 	public void addChild( Data data )
 	{
 		this.children.add( data );
 	}
-	
+
 	public List<Data> getDataList( )
 	{
 		return children;
@@ -39,7 +39,7 @@ public class Character implements TreeNode
 	{
 		return sCharacter;
 	}
-	
+
 	@Override
 	public String toString( )
 	{
@@ -51,7 +51,7 @@ public class Character implements TreeNode
 	{
 		return !getDataList( ).isEmpty( );
 	}
-	
+
 	@Override
 	public DataSet getParent( )
 	{

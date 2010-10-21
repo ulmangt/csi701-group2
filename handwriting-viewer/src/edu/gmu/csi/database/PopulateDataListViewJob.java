@@ -20,7 +20,7 @@ public class PopulateDataListViewJob extends Job
 	public PopulateDataListViewJob( DataListView view )
 	{
 		super( "Loading Database..." );
-		
+
 		this.view = view;
 	}
 
@@ -28,18 +28,18 @@ public class PopulateDataListViewJob extends Job
 	protected IStatus run( IProgressMonitor monitor )
 	{
 		final Root root = new Root( "Handwriting" );
-		
+
 		PoulateSourcesQuery poulateSourcesQuery = new PoulateSourcesQuery( root );
 		poulateSourcesQuery.runQuery( );
 		List<Source> sourceList = poulateSourcesQuery.getResults( );
-		
+
 		PopulateDataSetsQuery populateDataSetsQuery = new PopulateDataSetsQuery( sourceList );
 		populateDataSetsQuery.runQuery( );
 		List<DataSet> dataSetList = populateDataSetsQuery.getResults( );
-		
+
 		PopulateCharacterAndDataQuery populateDataQuery = new PopulateCharacterAndDataQuery( dataSetList );
 		populateDataQuery.runQuery( );
-		
+
 		Display.getDefault( ).asyncExec( new Runnable( )
 		{
 			public void run( )
@@ -47,7 +47,7 @@ public class PopulateDataListViewJob extends Job
 				view.setRoot( root );
 			}
 		} );
-		
+
 		return Status.OK_STATUS;
 	}
 }

@@ -16,28 +16,28 @@ public class PopulateDataSetsQuery
 {
 	private List<Source> parents;
 	private List<DataSet> results;
-	
+
 	public PopulateDataSetsQuery( List<Source> parents )
 	{
 		this.parents = parents;
 		this.results = new ArrayList<DataSet>( );
 	}
-	
+
 	public String getQuery( )
 	{
 		return "SELECT * FROM Handwriting.DataSet WHERE DataSet.ixSource = ?";
 	}
-	
+
 	public void runQuery( )
 	{
 		Connection connection = null;
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
-		
+
 		try
 		{
 			connection = DatabaseManager.getInstance( ).getConnection( );
-			
+
 			for ( Source source : parents )
 			{
 				try
@@ -53,8 +53,20 @@ public class PopulateDataSetsQuery
 				}
 				finally
 				{
-					if ( resultSet != null ) try { resultSet.close( ); } catch ( SQLException e ) { }
-					if ( statement != null ) try { statement.close( ); } catch ( SQLException e ) { }
+					if ( resultSet != null ) try
+					{
+						resultSet.close( );
+					}
+					catch ( SQLException e )
+					{
+					}
+					if ( statement != null ) try
+					{
+						statement.close( );
+					}
+					catch ( SQLException e )
+					{
+					}
 				}
 			}
 		}
@@ -64,28 +76,34 @@ public class PopulateDataSetsQuery
 		}
 		finally
 		{
-			if ( connection != null ) try { connection.close( ); } catch ( SQLException e ) { }
+			if ( connection != null ) try
+			{
+				connection.close( );
+			}
+			catch ( SQLException e )
+			{
+			}
 		}
 	}
-	
+
 	public void setResults( Source parent, ResultSet resultSet ) throws SQLException
 	{
 		List<DataSet> result = new ArrayList<DataSet>( );
-		
+
 		while ( resultSet.next( ) )
 		{
 			int ixDataSet = resultSet.getInt( "ixDataSet" );
 			String sDescription = resultSet.getString( "sDescription" );
 			String sUrl = resultSet.getString( "sUrl" );
 			Date dtAccessTime = resultSet.getDate( "dtAccessTime" );
-			
+
 			result.add( new DataSet( ixDataSet, parent, sDescription, sUrl, dtAccessTime ) );
 		}
-		
+
 		parent.addChildren( result );
 		results.addAll( result );
 	}
-	
+
 	public List<DataSet> getResults( )
 	{
 		return results;

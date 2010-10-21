@@ -7,36 +7,36 @@ import java.util.List;
 public class Root implements TreeNode
 {
 	private String databaseName;
-	
+
 	private List<Source> children;
-	
+
 	public Root( String databaseName )
 	{
 		this.databaseName = databaseName;
-		
+
 		this.children = new ArrayList<Source>( );
 	}
-	
+
 	public void addChildren( Collection<Source> sources )
 	{
 		this.children.addAll( sources );
 	}
-	
+
 	public void addChild( Source source )
 	{
 		this.children.add( source );
 	}
-	
+
 	public List<Source> getSourceList( )
 	{
 		return children;
 	}
-	
+
 	public String getDatabaseName( )
 	{
 		return databaseName;
 	}
-	
+
 	@Override
 	public String toString( )
 	{

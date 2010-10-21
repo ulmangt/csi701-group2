@@ -12,32 +12,32 @@ public class Source implements TreeNode
 	private String sUrl;
 
 	private List<DataSet> children;
-	
+
 	public Source( int ixSource, Root parent, String sName, String sUrl )
 	{
 		this.ixSource = ixSource;
 		this.parent = parent;
 		this.sName = sName;
 		this.sUrl = sUrl;
-		
+
 		this.children = new ArrayList<DataSet>( );
 	}
-	
+
 	public void addChildren( Collection<DataSet> dataSets )
 	{
 		this.children.addAll( dataSets );
 	}
-	
+
 	public void addChild( DataSet dataSet )
 	{
 		this.children.add( dataSet );
 	}
-	
+
 	public List<DataSet> getDataSetList( )
 	{
 		return children;
 	}
-	
+
 	public int getId( )
 	{
 		return ixSource;
@@ -52,13 +52,13 @@ public class Source implements TreeNode
 	{
 		return sUrl;
 	}
-	
+
 	@Override
 	public String toString( )
 	{
 		return String.format( "[%d] %s", ixSource, sName );
 	}
-	
+
 	@Override
 	public Root getParent( )
 	{

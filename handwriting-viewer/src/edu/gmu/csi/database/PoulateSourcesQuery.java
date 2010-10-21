@@ -12,12 +12,12 @@ public class PoulateSourcesQuery extends DatabaseQuery
 {
 	private Root parent;
 	private List<Source> results;
-	
+
 	public PoulateSourcesQuery( Root parent )
 	{
 		this.parent = parent;
 	}
-	
+
 	@Override
 	public String getQuery( )
 	{
@@ -28,19 +28,19 @@ public class PoulateSourcesQuery extends DatabaseQuery
 	public void setResults( ResultSet resultSet ) throws SQLException
 	{
 		results = new ArrayList<Source>( );
-		
+
 		while ( resultSet.next( ) )
 		{
 			int ixSource = resultSet.getInt( "ixSource" );
 			String sName = resultSet.getString( "sName" );
 			String sUrl = resultSet.getString( "sUrl" );
-			
+
 			results.add( new Source( ixSource, parent, sName, sUrl ) );
 		}
-		
+
 		parent.addChildren( results );
 	}
-	
+
 	public List<Source> getResults( )
 	{
 		return results;
