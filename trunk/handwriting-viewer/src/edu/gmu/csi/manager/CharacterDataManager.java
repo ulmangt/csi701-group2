@@ -12,6 +12,8 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import edu.gmu.csi.model.Data;
 import edu.gmu.csi.model.data.CharacterData;
@@ -20,21 +22,15 @@ public class CharacterDataManager
 {
 	private static final CharacterDataManager instance = new CharacterDataManager( );
 
+	private static final int NUM_THREADS = 4;
+	
 	private Map<Data, SoftReference<CharacterData>> characterDataMap;
-	private Connection connection;
+	
+	private ExecutorService threadPool = Executors.newFixedThreadPool( NUM_THREADS );
 
 	public CharacterDataManager( )
 	{
 		characterDataMap = Collections.synchronizedMap( new HashMap<Data, SoftReference<CharacterData>>( ) );
-
-		try
-		{
-			connection = DatabaseManager.getInstance( ).getConnection( );
-		}
-		catch ( SQLException e )
-		{
-			e.printStackTrace( );
-		}
 	}
 
 	public static CharacterDataManager getInstance( )
@@ -71,13 +67,15 @@ public class CharacterDataManager
 		}
 	}
 
-	public synchronized CharacterData queryCharacterData( Data data )
+	public CharacterData queryCharacterData( Data data )
 	{
+		Connection connection = null;
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 
 		try
 		{
+			connection = DatabaseManager.getInstance( ).getConnection( );
 			statement = connection.prepareStatement( "SELECT Data.bData FROM Handwriting.Data WHERE Data.ixData = ?" );
 			statement.setInt( 1, data.getId( ) );
 			resultSet = statement.executeQuery( );
@@ -85,25 +83,6 @@ public class CharacterDataManager
 			if ( resultSet.next( ) )
 			{
 				InputStream stream = new DataInputStream( new BufferedInputStream( resultSet.getBinaryStream( 1 ) ) );
-
-				/*
-				int expected = data.getCols( ) * data.getRows( );
-				int index = 0;
-				int[] imageData = new int[ expected ];
-				
-				try
-				{
-					for ( ; index < expected ; index++ )
-					{
-						imageData[ index ] = stream.read( );
-					}
-				}
-				catch ( IOException e )
-				{
-					e.printStackTrace();
-					System.out.printf( "Expected %d data values. Received only %d data values.", expected, index );
-				}
-				*/
 
 				int expected = data.getCols( ) * data.getRows( );
 				int index = 0;
@@ -141,9 +120,18 @@ public class CharacterDataManager
 			catch ( SQLException e )
 			{
 			}
+			
 			if ( statement != null ) try
 			{
 				statement.close( );
+			}
+			catch ( SQLException e )
+			{
+			}
+			
+			if ( connection != null ) try
+			{
+				connection.close( );
 			}
 			catch ( SQLException e )
 			{

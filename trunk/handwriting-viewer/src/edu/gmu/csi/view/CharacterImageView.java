@@ -1,5 +1,7 @@
 package edu.gmu.csi.view;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.swt.SWT;
@@ -16,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.gmu.csi.model.Data;
 import edu.gmu.csi.model.data.CharacterData;
 
 public class CharacterImageView extends ViewPart
@@ -24,8 +27,9 @@ public class CharacterImageView extends ViewPart
 
 	private Canvas canvas;
 	private CharacterImagePainter painter;
-
 	private PaletteData palette;
+	
+	private Map<Data,Image> loadedImages;
 
 	public CharacterImageView( )
 	{
@@ -37,6 +41,8 @@ public class CharacterImageView extends ViewPart
 		}
 
 		palette = new PaletteData( colors );
+		
+		loadedImages = new HashMap<Data,Image>( );
 	}
 
 	private class CharacterImagePainter implements PaintListener
@@ -125,6 +131,6 @@ public class CharacterImageView extends ViewPart
 	@Override
 	public void setFocus( )
 	{
-		// TODO Auto-generated method stub
+		canvas.setFocus( );
 	}
 }
