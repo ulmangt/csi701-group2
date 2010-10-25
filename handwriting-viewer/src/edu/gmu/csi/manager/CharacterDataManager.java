@@ -12,8 +12,10 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import edu.gmu.csi.model.Data;
 import edu.gmu.csi.model.data.CharacterData;
@@ -37,8 +39,29 @@ public class CharacterDataManager
 	{
 		return instance;
 	}
+	
+	private class GetCharacterData implements Callable<CharacterData>
+	{
+		private Data data;
+		
+		public GetCharacterData( Data data )
+		{
+			this.data = data;
+		}
+		
+		@Override
+		public CharacterData call( ) throws Exception
+		{
+			return getCharacterData0( data );
+		}
+	}
 
-	public CharacterData getCharacterData( Data data )
+	public Future<CharacterData> getCharacterData( Data data )
+	{
+		return threadPool.submit( new GetCharacterData( data ) );
+	}
+	
+	protected CharacterData getCharacterData0( Data data )
 	{
 		SoftReference<CharacterData> dataRef = characterDataMap.get( data );
 
@@ -67,7 +90,7 @@ public class CharacterDataManager
 		}
 	}
 
-	public CharacterData queryCharacterData( Data data )
+	protected CharacterData queryCharacterData( Data data )
 	{
 		Connection connection = null;
 		PreparedStatement statement = null;

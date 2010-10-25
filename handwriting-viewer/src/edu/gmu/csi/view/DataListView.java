@@ -1,5 +1,6 @@
 package edu.gmu.csi.view;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -25,11 +26,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 import edu.gmu.csi.database.PopulateDataListViewJob;
-import edu.gmu.csi.manager.CharacterDataManager;
 import edu.gmu.csi.model.Data;
 import edu.gmu.csi.model.Root;
 import edu.gmu.csi.model.TreeNode;
-import edu.gmu.csi.model.data.CharacterData;
 
 public class DataListView extends ViewPart
 {
@@ -58,25 +57,24 @@ public class DataListView extends ViewPart
 			{
 				if ( event.getSelection( ).isEmpty( ) )
 				{
+					getCharacterImageView( ).setSelection( null );
 				}
 				if ( event.getSelection( ) instanceof IStructuredSelection )
 				{
+					List<Data> selectedData = new ArrayList<Data>( );
 					IStructuredSelection selection = ( IStructuredSelection ) event.getSelection( );
+					
 					for ( Iterator iterator = selection.iterator( ); iterator.hasNext( ); )
 					{
 						TreeNode treeNode = ( TreeNode ) iterator.next( );
 
 						if ( treeNode instanceof Data )
 						{
-							Data data = ( Data ) treeNode;
-							CharacterData characterData = CharacterDataManager.getInstance( ).getCharacterData( data );
-
-							if ( characterData != null )
-							{
-								getCharacterImageView( ).setImage( characterData );
-							}
+							selectedData.add( (Data) treeNode );
 						}
 					}
+					
+					getCharacterImageView( ).setSelection( selectedData );
 				}
 			}
 		} );
