@@ -155,6 +155,7 @@ public class CharacterImageView extends ViewPart
 					}
 					
 					newLoadedImages.clear( );
+					selectionChanged = false;
 				}
 				finally
 				{
@@ -263,6 +264,15 @@ public class CharacterImageView extends ViewPart
 				}
 			}
 		}
+		
+		Display.getDefault( ).asyncExec( new Runnable( )
+		{
+			@Override
+			public void run( )
+			{
+				canvas.redraw( );
+			}
+		});
 	}
 
 	protected void queryForData( final Data data )
@@ -299,6 +309,15 @@ public class CharacterImageView extends ViewPart
 						{
 							selectionLock.unlock( );
 						}
+						
+						Display.getDefault( ).asyncExec( new Runnable( )
+						{
+							@Override
+							public void run( )
+							{
+								canvas.redraw( );
+							}
+						});
 					}
 				}
 				catch ( Exception e )
