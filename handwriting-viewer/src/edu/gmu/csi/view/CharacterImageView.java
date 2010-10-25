@@ -201,7 +201,7 @@ public class CharacterImageView extends ViewPart
 							      posX, posY, (int) widthStep, (int) heightStep );
 				}
 				
-				if ( syncShowIds )
+				if ( showIds )
 				{
 					gc.drawString( String.valueOf( data.getId( ) ), posX, posY );
 				}
