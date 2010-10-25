@@ -90,7 +90,9 @@ public class CharacterImageView extends ViewPart
 				Image image = imageData.getImage( );
 				
 				if ( image == null ) return;
-					
+				
+				System.out.println( "Memory low, disposing of image: " + imageData );
+				
 				image.dispose( );
 			}
 			catch ( InterruptedException e )
