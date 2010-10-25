@@ -11,6 +11,10 @@ import java.util.Map.Entry;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -23,6 +27,8 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.gmu.csi.manager.CharacterDataManager;
@@ -46,9 +52,10 @@ public class CharacterImageView extends ViewPart
 	private ReentrantLock selectionLock;
 	private List<CharacterImageData> newLoadedImages;
 	private List<Data> newSelection;
-	private boolean isNewSelection = false;
+	private boolean syncNewSelection = false;
+	private boolean syncShowIds = false;
 	
-	private volatile boolean selectionChanged = false;;
+	private volatile boolean syncUpdated = false;
 
 	public CharacterImageView( )
 	{
@@ -109,6 +116,7 @@ public class CharacterImageView extends ViewPart
 		private int columns = 0;
 		private int rows = 0;
 		private int total = 0;
+		private boolean showIds = false;
 		
 		public CharacterImagePainter( )
 		{
@@ -125,12 +133,12 @@ public class CharacterImageView extends ViewPart
 
 			GC gc = e.gc;
 
-			if ( selectionChanged )
+			if ( syncUpdated )
 			{
 				selectionLock.lock( );
 				try
 				{
-					if ( isNewSelection )
+					if ( syncNewSelection )
 					{
 						total = newSelection == null ? 0 : newSelection.size( );
 						double _columns = Math.ceil( Math.sqrt( total ) );
@@ -147,7 +155,7 @@ public class CharacterImageView extends ViewPart
 							dataIndex.put( newSelection.get(i), i );
 						}
 						
-						isNewSelection = false;
+						syncNewSelection = false;
 					}
 					
 					for ( CharacterImageData newImage : newLoadedImages )
@@ -156,8 +164,10 @@ public class CharacterImageView extends ViewPart
 						if ( index != null ) imageIndex.put( index, newImage );
 					}
 					
+					showIds = syncShowIds;
+					
 					newLoadedImages.clear( );
-					selectionChanged = false;
+					syncUpdated = false;
 				}
 				finally
 				{
@@ -181,16 +191,19 @@ public class CharacterImageView extends ViewPart
 				int col = index % columns;
 				int row = index / columns;
 				
-				if ( image == null )
-				{
-					// do nothing
-				}
-				else
+				int posX = (int) (col * widthStep);
+				int posY = (int) (row * heightStep);
+				
+				if ( image != null )
 				{
 					gc.drawImage( image.getImage( ),
 							      0, 0, image.getImageColumns( ), image.getImageRows( ),
-							      (int) (col * widthStep), (int) (row * heightStep),
-							      (int) widthStep, (int) heightStep );
+							      posX, posY, (int) widthStep, (int) heightStep );
+				}
+				
+				if ( syncShowIds )
+				{
+					gc.drawString( String.valueOf( data.getId( ) ), posX, posY );
 				}
 			}
 		}
@@ -209,8 +222,8 @@ public class CharacterImageView extends ViewPart
 		try
 		{
 			newSelection = _newSelection;
-			isNewSelection = true;
-			selectionChanged = true;
+			syncNewSelection = true;
+			syncUpdated = true;
 			
 		}
 		finally
@@ -239,7 +252,7 @@ public class CharacterImageView extends ViewPart
 							try
 							{
 								newLoadedImages.add( image );
-								selectionChanged = true;
+								syncUpdated = true;
 							}
 							finally
 							{
@@ -267,14 +280,7 @@ public class CharacterImageView extends ViewPart
 			}
 		}
 		
-		Display.getDefault( ).asyncExec( new Runnable( )
-		{
-			@Override
-			public void run( )
-			{
-				canvas.redraw( );
-			}
-		});
+		redrawCanvas( );
 	}
 
 	protected void queryForData( final Data data )
@@ -305,21 +311,14 @@ public class CharacterImageView extends ViewPart
 						try
 						{
 							newLoadedImages.add( image );
-							selectionChanged = true;
+							syncUpdated = true;
 						}
 						finally
 						{
 							selectionLock.unlock( );
 						}
 						
-						Display.getDefault( ).asyncExec( new Runnable( )
-						{
-							@Override
-							public void run( )
-							{
-								canvas.redraw( );
-							}
-						});
+						redrawCanvas( );
 					}
 				}
 				catch ( Exception e )
@@ -330,12 +329,50 @@ public class CharacterImageView extends ViewPart
 		}).start( );
 	}
 	
+	protected void redrawCanvas( )
+	{
+		Display.getDefault( ).asyncExec( new Runnable( )
+		{
+			@Override
+			public void run( )
+			{
+				canvas.redraw( );
+			}
+		});
+	}
+	
 	@Override
 	public void createPartControl( Composite parent )
 	{
 		canvas = new Canvas( parent, SWT.DOUBLE_BUFFERED );
 		painter = new CharacterImagePainter( );
 		canvas.addPaintListener( painter );
+		
+		IToolBarManager toolbarManager = getViewSite( ).getActionBars( ).getToolBarManager( );
+		toolbarManager.add( new Action( "Show Ids", IAction.AS_CHECK_BOX )
+		{
+			{
+				ImageDescriptor openImage = PlatformUI.getWorkbench( ).getSharedImages( ).getImageDescriptor( ISharedImages.IMG_OBJS_INFO_TSK );
+				setImageDescriptor( openImage );
+			}
+			
+			@Override
+			public void run( )
+			{
+				selectionLock.lock( );
+				try
+				{
+					syncShowIds = isChecked( );
+					syncUpdated = true;
+				}
+				finally
+				{
+					selectionLock.unlock( );
+				}
+				
+				redrawCanvas( );
+			}
+		});
 	}
 
 	@Override
