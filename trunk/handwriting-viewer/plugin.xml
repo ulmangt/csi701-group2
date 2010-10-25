@@ -33,6 +33,12 @@
             name="Image View"
             restorable="true">
       </view>
+      <view
+            class="edu.gmu.csi.view.ResultListView"
+            id="handwriting-viewer.resultlistview"
+            name="Results View"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
