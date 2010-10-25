@@ -39,4 +39,10 @@ public class CharacterImageData
 	{
 		return data.getData( ).getCols( );
 	}
+	
+	@Override
+	public String toString( )
+	{
+		return data.toString( );
+	}
 }

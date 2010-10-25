@@ -32,4 +32,10 @@ public class CharacterData
 	{
 		return data.getCols( );
 	}
+	
+	@Override
+	public String toString( )
+	{
+		return data.toString( );
+	}
 }
