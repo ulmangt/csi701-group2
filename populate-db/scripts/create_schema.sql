@@ -80,24 +80,85 @@ CREATE TABLE IF NOT EXISTS Handwriting.Data (
 SHOW WARNINGS ;
 
 -- -----------------------------------------------------
+-- Table Handwriting.Metadata
+--
+-- Rows provide freeform key / value pairs for describing a piece of data
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS Handwriting.Metadata ;
+
+SHOW WARNINGS ;
+
+-- ixMetadata unique integer identifier of the metadata
+-- ixData foreign key referencing the data element that this metadata describes
+-- sKey a description of the parameter
+-- sValue the value of the parameter
+CREATE TABLE IF NOT EXISTS Handwriting.Metadata (
+  ixMetadata INT(11) NOT NULL AUTO_INCREMENT ,
+  ixData INT(11) NOT NULL ,
+  sKey VARCHAR(100) NOT NULL ,
+  sValue VARCHAR(100) NULL ,
+  PRIMARY KEY (ixMetadata)  );
+
+SHOW WARNINGS ;
+
+-- -----------------------------------------------------
+-- Table Handwriting.Run
+--
+-- Describes a single data processing run which classified a set of data
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS Handwriting.Run ;
+
+SHOW WARNINGS ;
+
+-- ixRun unique integer identifier of an run
+CREATE TABLE IF NOT EXISTS Handwriting.Run (
+  ixRun INT(11) NOT NULL AUTO_INCREMENT ,
+  sDescription VARCHAR(200) NOT NULL ,
+  dtRunDate DATETIME NULL ,
+  PRIMARY KEY (ixRun)  );
+
+SHOW WARNINGS ;
+
+-- -----------------------------------------------------
+-- Table Handwriting.Parameter
+--
+-- Rows provide freeform key / value pairs for describing the parameter settings of various processing runs
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS Handwriting.Parameter ;
+
+SHOW WARNINGS ;
+
+-- ixParameter unique integer identifier of the parameter
+-- ixRun foreign key referencing the run that this parameter describes
+-- sKey a description of the parameter
+-- sValue the value of the parameter
+CREATE TABLE IF NOT EXISTS Handwriting.Parameter (
+  ixParameter INT(11) NOT NULL AUTO_INCREMENT ,
+  ixRun INT(11) NOT NULL ,
+  sKey VARCHAR(100) NOT NULL ,
+  sValue VARCHAR(100) NULL ,
+  PRIMARY KEY (ixParameter)  );
+
+SHOW WARNINGS ;
+
+-- -----------------------------------------------------
 -- Table Handwriting.Result
 --
--- Rows provide freeform key / value pairs for annotating Data with results from algorithmic processing.
+-- Rows provide classifications assigned to data elements by processing runs
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS Handwriting.Result ;
 
 SHOW WARNINGS ;
 
--- ixResult unique integer identifier of an in
+-- ixResult unique integer identifier of the classification given to a data element by a run
+-- ixData foreign key referencing a data element
+-- ixRun foreign key referencing a run
+-- sClassification the classification that the run gave the data element
 CREATE TABLE IF NOT EXISTS Handwriting.Result (
   ixResult INT(11) NOT NULL AUTO_INCREMENT ,
   ixData INT(11) NOT NULL ,
-  sKey VARCHAR(50) NOT NULL ,
-  sValue FLOAT(23) NULL ,
+  ixRun INT(11) NOT NULL ,
+  sClassification VARCHAR(1) NULL ,
   PRIMARY KEY (ixResult)  );
-
-SHOW WARNINGS ;
-
-CREATE UNIQUE INDEX ResultKeyIndex ON Handwriting.Result (sKey,ixData);
 
 SHOW WARNINGS ;
