@@ -5,15 +5,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.gmu.csi.model.Root;
+import edu.gmu.csi.model.SourceRoot;
 import edu.gmu.csi.model.Source;
 
 public class PoulateSourcesQuery extends DatabaseQuery
 {
-	private Root parent;
+	private SourceRoot parent;
 	private List<Source> results;
 
-	public PoulateSourcesQuery( Root parent )
+	public PoulateSourcesQuery( SourceRoot parent )
 	{
 		this.parent = parent;
 	}

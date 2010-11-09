@@ -7,13 +7,13 @@ import java.util.List;
 public class Source implements TreeNode
 {
 	private int ixSource;
-	private Root parent;
+	private SourceRoot parent;
 	private String sName;
 	private String sUrl;
 
 	private List<DataSet> children;
 
-	public Source( int ixSource, Root parent, String sName, String sUrl )
+	public Source( int ixSource, SourceRoot parent, String sName, String sUrl )
 	{
 		this.ixSource = ixSource;
 		this.parent = parent;
@@ -60,7 +60,7 @@ public class Source implements TreeNode
 	}
 
 	@Override
-	public Root getParent( )
+	public SourceRoot getParent( )
 	{
 		return parent;
 	}
