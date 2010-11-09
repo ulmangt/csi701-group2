@@ -9,7 +9,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 
 import edu.gmu.csi.model.DataSet;
-import edu.gmu.csi.model.Root;
+import edu.gmu.csi.model.SourceRoot;
 import edu.gmu.csi.model.Source;
 import edu.gmu.csi.view.DataListView;
 
@@ -27,7 +27,7 @@ public class PopulateDataListViewJob extends Job
 	@Override
 	protected IStatus run( IProgressMonitor monitor )
 	{
-		final Root root = new Root( "Handwriting" );
+		final SourceRoot root = new SourceRoot( "Handwriting" );
 
 		PoulateSourcesQuery poulateSourcesQuery = new PoulateSourcesQuery( root );
 		poulateSourcesQuery.runQuery( );

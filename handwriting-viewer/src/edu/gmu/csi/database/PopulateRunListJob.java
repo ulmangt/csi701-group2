@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 
 import edu.gmu.csi.model.Run;
+import edu.gmu.csi.model.RunRoot;
 import edu.gmu.csi.view.RunListView;
 
 public class PopulateRunListJob extends Job
@@ -29,11 +30,20 @@ public class PopulateRunListJob extends Job
 		populateRunListQuery.runQuery( );
 		final List<Run> results = populateRunListQuery.getResults( );
 
+		for ( Run run : results )
+		{
+			PopulateRunParametersQuery parametersQuery = new PopulateRunParametersQuery( run );
+			parametersQuery.runQuery( );
+		}
+		
+		final RunRoot root = new RunRoot( );
+		root.addChildren( results );
+		
 		Display.getDefault( ).asyncExec( new Runnable( )
 		{
 			public void run( )
 			{
-				view.setInput( results );
+				view.setInput( root );
 			}
 		} );
 

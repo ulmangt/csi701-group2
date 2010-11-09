@@ -7,11 +7,9 @@ import java.util.List;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
@@ -27,8 +25,9 @@ import org.eclipse.ui.PlatformUI;
 
 import edu.gmu.csi.database.PopulateDataListViewJob;
 import edu.gmu.csi.model.Data;
-import edu.gmu.csi.model.Root;
+import edu.gmu.csi.model.SourceRoot;
 import edu.gmu.csi.model.TreeNode;
+import edu.gmu.csi.view.tree.TreeNodeContentProvider;
 
 public class DataListView extends ViewPart
 {
@@ -46,7 +45,7 @@ public class DataListView extends ViewPart
 	{
 		treeViewer = new TreeViewer( parent );
 
-		treeViewer.setContentProvider( new DataListContentProvider( ) );
+		treeViewer.setContentProvider( new TreeNodeContentProvider( ) );
 		treeViewer.setLabelProvider( new DataListLabelProvider( ) );
 
 		treeViewer.addSelectionChangedListener( new ISelectionChangedListener( )
@@ -79,13 +78,13 @@ public class DataListView extends ViewPart
 			}
 		} );
 
-		IWorkbenchPartSite site = getSite( );
-		IWorkbenchSiteProgressService siteService = ( IWorkbenchSiteProgressService ) site.getAdapter( IWorkbenchSiteProgressService.class );
-
-		PopulateDataListViewJob job = new PopulateDataListViewJob( this );
-
-		siteService.showInDialog( site.getShell( ), job );
-		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
+//		IWorkbenchPartSite site = getSite( );
+//		IWorkbenchSiteProgressService siteService = ( IWorkbenchSiteProgressService ) site.getAdapter( IWorkbenchSiteProgressService.class );
+//
+//		PopulateDataListViewJob job = new PopulateDataListViewJob( this );
+//
+//		siteService.showInDialog( site.getShell( ), job );
+//		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
 	}
 
 	protected CharacterImageView getCharacterImageView( )
@@ -112,7 +111,7 @@ public class DataListView extends ViewPart
 		return null;
 	}
 
-	public void setRoot( Root root )
+	public void setRoot( SourceRoot root )
 	{
 		treeViewer.setInput( root );
 		
@@ -124,69 +123,6 @@ public class DataListView extends ViewPart
 	{
 		// TODO Auto-generated method stub
 
-	}
-
-	private class DataListContentProvider implements ITreeContentProvider
-	{
-
-		@Override
-		public void dispose( )
-		{
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void inputChanged( Viewer viewer, Object oldInput, Object newInput )
-		{
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public Object[] getElements( Object inputElement )
-		{
-			return getChildren( inputElement );
-		}
-
-		@Override
-		public Object[] getChildren( Object parentElement )
-		{
-			if ( parentElement instanceof TreeNode )
-			{
-				return ( ( TreeNode ) parentElement ).getChildren( );
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		@Override
-		public Object getParent( Object element )
-		{
-			if ( element instanceof TreeNode )
-			{
-				return ( ( TreeNode ) element ).getParent( );
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		@Override
-		public boolean hasChildren( Object element )
-		{
-			if ( element instanceof TreeNode )
-			{
-				return ( ( TreeNode ) element ).hasChildren( );
-			}
-			else
-			{
-				return false;
-			}
-		}
 	}
 
 	private class DataListLabelProvider extends LabelProvider

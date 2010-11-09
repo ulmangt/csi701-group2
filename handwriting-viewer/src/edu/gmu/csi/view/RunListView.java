@@ -6,18 +6,16 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
@@ -25,7 +23,10 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 
 import edu.gmu.csi.database.PopulateRunListJob;
+import edu.gmu.csi.model.IdKeyValue;
 import edu.gmu.csi.model.Run;
+import edu.gmu.csi.model.RunRoot;
+import edu.gmu.csi.view.tree.TreeNodeContentProvider;
 
 public class RunListView extends ViewPart
 {
@@ -33,28 +34,7 @@ public class RunListView extends ViewPart
 
 	private DateFormat dateFormat;
 	
-	private TableViewer tableViewer;
-
-	class ViewContentProvider implements IStructuredContentProvider
-	{
-		public void inputChanged( Viewer v, Object oldInput, Object newInput )
-		{
-		}
-
-		public void dispose( )
-		{
-		}
-
-		public Object[] getElements( Object parent )
-		{
-			if ( parent instanceof List<?> )
-			{
-				return ( ( List<?> ) parent ).toArray( );
-			}
-
-			return new Object[0];
-		}
-	}
+	private TreeViewer tableViewer;
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider
 	{
@@ -67,13 +47,25 @@ public class RunListView extends ViewPart
 				switch ( index )
 				{
 					case 0:
-						return String.valueOf( result.getKey( ) );
-					case 1:
 						return String.valueOf( result.getDescription( ) );
-					case 2:
+					case 1:
 						return dateFormat.format( result.getRunDate( ) );
 					default:
-						return null;
+						return "";
+				}
+			}
+			else if ( obj instanceof IdKeyValue )
+			{
+				IdKeyValue parameter = ( IdKeyValue ) obj;
+
+				switch ( index )
+				{
+					case 0:
+						return String.valueOf( parameter.getKey( ) );
+					case 1:
+						return String.valueOf( parameter.getValue( ) );
+					default:
+						return "";
 				}
 			}
 			else
@@ -99,31 +91,27 @@ public class RunListView extends ViewPart
 		dateFormat = new SimpleDateFormat( );
 		
 		int style = SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.HIDE_SELECTION;
-		Table table = new Table( parent, style );
+		Tree table = new Tree( parent, style );
 		
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
 		
-		TableColumn column = new TableColumn(table, SWT.LEFT, 0);		
-		column.setText("ID");
-		column.setWidth( 30 );
-		
-		column = new TableColumn(table, SWT.LEFT, 1);
+		TreeColumn column = new TreeColumn(table, SWT.LEFT);		
 		column.setText("Description");
-		column.setWidth( 200 );
+		column.setWidth( 250 );
 		
-		column = new TableColumn(table, SWT.LEFT, 2);
-		column.setText("Date");
+		column = new TreeColumn(table, SWT.LEFT);
+		column.setText("Value");
 		column.setWidth( 50 );
 		
-		tableViewer = new TableViewer( table );
+		tableViewer = new TreeViewer( table );
 
 		tableViewer.setUseHashlookup( true );
 
-		String[] columnNames = new String[] { "ID", "Description", "Date" };
+		String[] columnNames = new String[] { "Description", "Value" };
 		tableViewer.setColumnProperties( columnNames );
 
-		tableViewer.setContentProvider( new ViewContentProvider( ) );
+		tableViewer.setContentProvider( new TreeNodeContentProvider( ) );
 		tableViewer.setLabelProvider( new ViewLabelProvider( ) );
 		
 		tableViewer.addSelectionChangedListener( new ISelectionChangedListener( )
@@ -144,7 +132,7 @@ public class RunListView extends ViewPart
 					
 					for ( Iterator iterator = selection.iterator( ); iterator.hasNext( ); )
 					{
-						Run resultKey = ( Run ) iterator.next( );
+						Run run = ( Run ) iterator.next( );
 						
 						//TODO do something here
 					}
@@ -168,8 +156,8 @@ public class RunListView extends ViewPart
 
 	}
 
-	public void setInput( List<Run> results )
-	{
+	public void setInput( RunRoot results )
+	{	
 		tableViewer.setInput( results );
 	}
 }

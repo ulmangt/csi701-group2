@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class Root implements TreeNode
+public class SourceRoot implements TreeNode
 {
 	private String databaseName;
 
 	private List<Source> children;
 
-	public Root( String databaseName )
+	public SourceRoot( String databaseName )
 	{
 		this.databaseName = databaseName;
 
