@@ -39,6 +39,12 @@
             name="Run View"
             restorable="true">
       </view>
+      <view
+            class="edu.gmu.csi.view.ConfusionMatrixView"
+            id="handwriting-viewer.confusionmatrixview"
+            name="Confusion Matrix View"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
