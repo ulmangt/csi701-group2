@@ -24,7 +24,7 @@
       <view
             class="edu.gmu.csi.view.DataListView"
             id="handwriting-viewer.datalistview"
-            name="Database View"
+            name="Data View"
             restorable="true">
       </view>
       <view
@@ -34,9 +34,9 @@
             restorable="true">
       </view>
       <view
-            class="edu.gmu.csi.view.ResultListView"
-            id="handwriting-viewer.resultlistview"
-            name="Results View"
+            class="edu.gmu.csi.view.RunListView"
+            id="handwriting-viewer.runlistview"
+            name="Run View"
             restorable="true">
       </view>
    </extension>

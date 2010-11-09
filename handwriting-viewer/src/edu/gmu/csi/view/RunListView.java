@@ -1,5 +1,7 @@
 package edu.gmu.csi.view;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,13 +24,15 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 
-import edu.gmu.csi.database.PopulateResultListJob;
-import edu.gmu.csi.model.ResultKey;
+import edu.gmu.csi.database.PopulateRunListJob;
+import edu.gmu.csi.model.Run;
 
-public class ResultListView extends ViewPart
+public class RunListView extends ViewPart
 {
-	public static final String ID = "handwriting-viewer.resultlistview";
+	public static final String ID = "handwriting-viewer.runlistview";
 
+	private DateFormat dateFormat;
+	
 	private TableViewer tableViewer;
 
 	class ViewContentProvider implements IStructuredContentProvider
@@ -56,16 +60,18 @@ public class ResultListView extends ViewPart
 	{
 		public String getColumnText( Object obj, int index )
 		{
-			if ( obj instanceof ResultKey )
+			if ( obj instanceof Run )
 			{
-				ResultKey result = ( ResultKey ) obj;
+				Run result = ( Run ) obj;
 
 				switch ( index )
 				{
 					case 0:
-						return result.getKey( );
+						return String.valueOf( result.getKey( ) );
 					case 1:
-						return String.valueOf( result.getCount( ) );
+						return String.valueOf( result.getDescription( ) );
+					case 2:
+						return dateFormat.format( result.getRunDate( ) );
 					default:
 						return null;
 				}
@@ -90,6 +96,8 @@ public class ResultListView extends ViewPart
 	@Override
 	public void createPartControl( Composite parent )
 	{
+		dateFormat = new SimpleDateFormat( );
+		
 		int style = SWT.SINGLE | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.HIDE_SELECTION;
 		Table table = new Table( parent, style );
 		
@@ -97,18 +105,22 @@ public class ResultListView extends ViewPart
 		table.setHeaderVisible(true);
 		
 		TableColumn column = new TableColumn(table, SWT.LEFT, 0);		
-		column.setText("Name");
-		column.setWidth( 200 );
+		column.setText("ID");
+		column.setWidth( 30 );
 		
 		column = new TableColumn(table, SWT.LEFT, 1);
-		column.setText("Count");
+		column.setText("Description");
+		column.setWidth( 200 );
+		
+		column = new TableColumn(table, SWT.LEFT, 2);
+		column.setText("Date");
 		column.setWidth( 50 );
 		
 		tableViewer = new TableViewer( table );
 
 		tableViewer.setUseHashlookup( true );
 
-		String[] columnNames = new String[] { "Name", "Count" };
+		String[] columnNames = new String[] { "ID", "Description", "Date" };
 		tableViewer.setColumnProperties( columnNames );
 
 		tableViewer.setContentProvider( new ViewContentProvider( ) );
@@ -132,7 +144,7 @@ public class ResultListView extends ViewPart
 					
 					for ( Iterator iterator = selection.iterator( ); iterator.hasNext( ); )
 					{
-						ResultKey resultKey = ( ResultKey ) iterator.next( );
+						Run resultKey = ( Run ) iterator.next( );
 						
 						//TODO do something here
 					}
@@ -143,7 +155,7 @@ public class ResultListView extends ViewPart
 		IWorkbenchPartSite site = getSite( );
 		IWorkbenchSiteProgressService siteService = ( IWorkbenchSiteProgressService ) site.getAdapter( IWorkbenchSiteProgressService.class );
 
-		PopulateResultListJob job = new PopulateResultListJob( this );
+		PopulateRunListJob job = new PopulateRunListJob( this );
 
 		siteService.showInDialog( site.getShell( ), job );
 		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
@@ -156,10 +168,8 @@ public class ResultListView extends ViewPart
 
 	}
 
-	public void setInput( List<ResultKey> results )
+	public void setInput( List<Run> results )
 	{
 		tableViewer.setInput( results );
-		System.out.println( results );
 	}
-
 }

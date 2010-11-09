@@ -8,14 +8,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 
-import edu.gmu.csi.model.ResultKey;
-import edu.gmu.csi.view.ResultListView;
+import edu.gmu.csi.model.Run;
+import edu.gmu.csi.view.RunListView;
 
-public class PopulateResultListJob extends Job
+public class PopulateRunListJob extends Job
 {
-	private ResultListView view;
+	private RunListView view;
 
-	public PopulateResultListJob( ResultListView view )
+	public PopulateRunListJob( RunListView view )
 	{
 		super( "Loading Database..." );
 
@@ -25,9 +25,9 @@ public class PopulateResultListJob extends Job
 	@Override
 	protected IStatus run( IProgressMonitor monitor )
 	{
-		PopulateResultListQuery populateResultListQuery = new PopulateResultListQuery( );
-		populateResultListQuery.runQuery( );
-		final List<ResultKey> results = populateResultListQuery.getResults( );
+		PopulateRunListQuery populateRunListQuery = new PopulateRunListQuery( );
+		populateRunListQuery.runQuery( );
+		final List<Run> results = populateRunListQuery.getResults( );
 
 		Display.getDefault( ).asyncExec( new Runnable( )
 		{
