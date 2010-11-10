@@ -11,6 +11,7 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -34,6 +35,8 @@ public class ConfusionMatrixView extends ViewPart
 	private ConfusionMatrix newConfusionMatrix;
 	private ConfusionMatrix confusionMatrix;
 	
+	private Transform transform;
+	
 	public ConfusionMatrixView( )
 	{
 		this.lock = new ReentrantLock( );
@@ -43,6 +46,11 @@ public class ConfusionMatrixView extends ViewPart
 	public void createPartControl( Composite parent )
 	{
 		Display display = Display.getDefault( );
+		
+		transform = new Transform( display );
+        float cos45 = (float)Math.cos(Math.PI/2);
+        float sin45 = (float)Math.sin(Math.PI/2);
+        transform.setElements(cos45, sin45, -sin45, cos45, 0, 0);
 		
 		final Color colorForeground = display.getSystemColor( SWT.COLOR_WIDGET_FOREGROUND );
 		final Color color = display.getSystemColor( SWT.COLOR_WIDGET_BORDER );
@@ -140,6 +148,13 @@ public class ConfusionMatrixView extends ViewPart
 						}
 					}
 				}
+				
+				Point p = gc.stringExtent( "Classifier" );
+				gc.drawString( "Classifier", (int) (2*widthStep + ( width - 2*widthStep ) / 2 - p.x/2), (int) (heightStep/2 - p.y/2) );
+				
+				p = gc.stringExtent( "Truth" );
+		        gc.setTransform( transform );
+				gc.drawString( "Truth", (int) (2*heightStep + ( height - 2*heightStep ) / 2 - p.x/2), (int) ( -widthStep/2 - p.y/2 ) );
 			}
 		} );
 		
