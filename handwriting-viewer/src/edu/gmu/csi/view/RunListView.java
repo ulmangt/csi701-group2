@@ -38,7 +38,6 @@ public class RunListView extends ViewPart
 	public static final String ID = "handwriting-viewer.runlistview";
 
 	private DateFormat dateFormat;
-	
 	private TreeViewer tableViewer;
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider
@@ -125,11 +124,11 @@ public class RunListView extends ViewPart
 			@SuppressWarnings( "rawtypes" )
 			public void selectionChanged( SelectionChangedEvent event )
 			{
-				System.out.println( event.getSelection( ) );
+				final ConfusionMatrixView confusionMatrixView = ViewUtil.getConfusionMatrixView( );
 				
 				if ( event.getSelection( ).isEmpty( ) )
 				{
-					ViewUtil.getConfusionMatrixView( ).setConfusionMatrix( null );
+					confusionMatrixView.setConfusionMatrix( null );
 				}
 				else if ( event.getSelection( ) instanceof IStructuredSelection )
 				{
@@ -152,7 +151,7 @@ public class RunListView extends ViewPart
 									
 									try
 									{
-										ViewUtil.getConfusionMatrixView( ).setConfusionMatrix( futureResults.get( ) );
+										confusionMatrixView.setConfusionMatrix( futureResults.get( ) );
 									}
 									catch ( InterruptedException e )
 									{
