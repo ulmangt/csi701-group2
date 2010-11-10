@@ -25,7 +25,7 @@ public class CharacterDataManager
 	private static final CharacterDataManager instance = new CharacterDataManager( );
 
 	private static final int NUM_THREADS = 4;
-	
+
 	private Map<Data, SoftReference<CharacterData>> characterDataMap;
 	
 	private ExecutorService threadPool = Executors.newFixedThreadPool( NUM_THREADS );

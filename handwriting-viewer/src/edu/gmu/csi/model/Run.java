@@ -37,7 +37,7 @@ public class Run implements TreeNode
 		return parameters;
 	}
 	
-	public int getKey( )
+	public int getId( )
 	{
 		return ixRun;
 	}

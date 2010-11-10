@@ -18,7 +18,7 @@ public class PopulateRunParametersQuery extends DatabaseQuery
 	@Override
 	public String getQuery( )
 	{
-		return String.format( "SELECT * FROM Handwriting.Parameter WHERE Parameter.ixRun = %d", run.getKey( ) );
+		return String.format( "SELECT * FROM Handwriting.Parameter WHERE Parameter.ixRun = %d", run.getId( ) );
 	}
 
 	@Override
