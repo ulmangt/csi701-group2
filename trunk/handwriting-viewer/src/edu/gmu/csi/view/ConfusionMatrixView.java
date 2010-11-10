@@ -29,6 +29,8 @@ public class ConfusionMatrixView extends ViewPart
 	
 	private ReentrantLock lock;
 	private volatile boolean matrixUpdated;
+	private Point newSelection;
+	private Point selection;
 	private ConfusionMatrix newConfusionMatrix;
 	private ConfusionMatrix confusionMatrix;
 	
@@ -44,7 +46,7 @@ public class ConfusionMatrixView extends ViewPart
 		
 		final Color colorForeground = display.getSystemColor( SWT.COLOR_WIDGET_FOREGROUND );
 		final Color color = display.getSystemColor( SWT.COLOR_WIDGET_BORDER );
-//		final Color color = display.getSystemColor( SWT.COLOR_RED );
+		final Color colorRed = display.getSystemColor( SWT.COLOR_RED );
 		
 		canvas = new Canvas( parent, SWT.DOUBLE_BUFFERED | SWT.BORDER );
 		canvas.addPaintListener( new PaintListener( )
@@ -57,6 +59,7 @@ public class ConfusionMatrixView extends ViewPart
 					lock.lock( );
 					try
 					{
+						selection = newSelection;
 						confusionMatrix = newConfusionMatrix;
 						matrixUpdated = false;
 					}
@@ -107,10 +110,16 @@ public class ConfusionMatrixView extends ViewPart
 				for ( int x = 2 ; x < rows ; x++ )
 				{
 					for ( int y = 2 ; y < cols ; y++ )
-					{	
+					{
 						gc.setForeground( colorForeground );
 						gc.drawRectangle( (int) (x * widthStep), (int) (y * heightStep), (int) widthStep, (int) heightStep );
 					}
+				}
+				
+				if ( selection != null )
+				{
+					gc.setForeground( colorRed );
+					gc.drawRectangle( (int) ( (selection.x + 2) * widthStep), (int) ( (selection.y + 2) * heightStep), (int) widthStep, (int) heightStep );
 				}
 				
 				if ( confusionMatrix != null )
@@ -170,6 +179,9 @@ public class ConfusionMatrixView extends ViewPart
 				try
 				{
 					dataList = newConfusionMatrix.get( xIndex, yIndex );
+					newSelection = new Point( xIndex, yIndex );
+					matrixUpdated = true;
+					
 				}
 				finally
 				{
@@ -177,6 +189,8 @@ public class ConfusionMatrixView extends ViewPart
 				}
 				
 				ViewUtil.getCharacterImageView( ).setSelection( dataList );
+				
+				redrawCanvas( );
 			}
 			
 		});
