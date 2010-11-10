@@ -136,23 +136,30 @@ public class RunListView extends ViewPart
 					
 					for ( Iterator iterator = selection.iterator( ); iterator.hasNext( ); )
 					{
-						Run run = ( Run ) iterator.next( );
+						Object selected = iterator.next( );
 						
-						Future<List<Result>> futureResults = DataResultManager.getInstance( ).getResults( run );
-					
-						try
-						{
-							System.out.println( futureResults.get( ) );
-						}
-						catch ( InterruptedException e )
-						{
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						catch ( ExecutionException e )
-						{
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						if ( selected instanceof Run )
+						{	
+							Run run = ( Run ) selected;
+							
+							Future<List<Result>> futureResults = DataResultManager.getInstance( ).getResults( run );
+						
+							try
+							{
+								System.out.println( futureResults.get( ).size( ) );
+							}
+							catch ( InterruptedException e )
+							{
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							catch ( ExecutionException e )
+							{
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							
+							return;
 						}
 					}
 				}
