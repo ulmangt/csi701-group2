@@ -16,7 +16,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.gmu.csi.manager.ViewUtil;
 import edu.gmu.csi.model.ConfusionMatrix;
+import edu.gmu.csi.model.Data;
 import edu.gmu.csi.model.Result;
 
 public class ConfusionMatrixView extends ViewPart
@@ -29,6 +31,11 @@ public class ConfusionMatrixView extends ViewPart
 	private volatile boolean matrixUpdated;
 	private ConfusionMatrix newConfusionMatrix;
 	private ConfusionMatrix confusionMatrix;
+	
+	public ConfusionMatrixView( )
+	{
+		this.lock = new ReentrantLock( );
+	}
 	
 	@Override
 	public void createPartControl( Composite parent )
@@ -51,6 +58,7 @@ public class ConfusionMatrixView extends ViewPart
 					try
 					{
 						confusionMatrix = newConfusionMatrix;
+						matrixUpdated = false;
 					}
 					finally
 					{
@@ -111,14 +119,15 @@ public class ConfusionMatrixView extends ViewPart
 					{
 						for ( int y = 2 ; y < cols ; y++ )
 						{
-							String s = String.valueOf( confusionMatrix.get( x-2, y-2 ) );
+							List<Data> dataList = confusionMatrix.get( x-2, y-2 );
+							String s = String.valueOf( dataList == null ? 0 : dataList.size( ) );
 							Point p = gc.stringExtent( s );
 							
 							if ( p.x > widthStep || p.y > heightStep )
 								s = "";
 							
-							gc.setForeground( colorForeground );
-							gc.drawRectangle( (int) (x * widthStep), (int) (y * heightStep), (int) widthStep, (int) heightStep );
+							gc.setForeground( color );
+							gc.drawString( s, (int) (x * widthStep + widthStep / 2 - p.x / 2), (int) (y * heightStep + heightStep / 2 - p.y / 2), true );
 						}
 					}
 				}
@@ -155,7 +164,19 @@ public class ConfusionMatrixView extends ViewPart
 				int xIndex = (int) Math.floor(e.x / widthStep) - 2;
 				int yIndex = (int) Math.floor(e.y / heightStep) - 2;
 				
-				System.out.println( xIndex  +  " " + yIndex );
+				List<Data> dataList = null;
+				
+				lock.lock( );
+				try
+				{
+					dataList = newConfusionMatrix.get( xIndex, yIndex );
+				}
+				finally
+				{
+					lock.unlock( );
+				}
+				
+				ViewUtil.getCharacterImageView( ).setSelection( dataList );
 			}
 			
 		});
@@ -188,5 +209,19 @@ public class ConfusionMatrixView extends ViewPart
 		{
 			this.lock.unlock( );
 		}
+		
+		redrawCanvas( );
+	}
+	
+	protected void redrawCanvas( )
+	{
+		Display.getDefault( ).asyncExec( new Runnable( )
+		{
+			@Override
+			public void run( )
+			{
+				canvas.redraw( );
+			}
+		});
 	}
 }
