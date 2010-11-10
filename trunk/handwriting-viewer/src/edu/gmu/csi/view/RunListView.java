@@ -4,6 +4,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -23,7 +25,9 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 
 import edu.gmu.csi.database.PopulateRunListJob;
+import edu.gmu.csi.manager.DataResultManager;
 import edu.gmu.csi.model.IdKeyValue;
+import edu.gmu.csi.model.Result;
 import edu.gmu.csi.model.Run;
 import edu.gmu.csi.model.RunRoot;
 import edu.gmu.csi.view.tree.TreeNodeContentProvider;
@@ -56,7 +60,7 @@ public class RunListView extends ViewPart
 			}
 			else if ( obj instanceof IdKeyValue )
 			{
-				IdKeyValue parameter = ( IdKeyValue ) obj;
+				IdKeyValue<?> parameter = ( IdKeyValue<?> ) obj;
 
 				switch ( index )
 				{
@@ -134,7 +138,22 @@ public class RunListView extends ViewPart
 					{
 						Run run = ( Run ) iterator.next( );
 						
-						//TODO do something here
+						Future<List<Result>> futureResults = DataResultManager.getInstance( ).getResults( run );
+					
+						try
+						{
+							System.out.println( futureResults.get( ) );
+						}
+						catch ( InterruptedException e )
+						{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						catch ( ExecutionException e )
+						{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}
 			}
