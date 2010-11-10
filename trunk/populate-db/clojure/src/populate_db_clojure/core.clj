@@ -110,6 +110,16 @@
                       row-batch)))
                row-batches ))))))
 
+(defn sql-insert-fake-results [ixStart ixEnd runId actual errorRate]
+  "Inserts fake data into the Result table."
+  (with-connection db
+    (let [rand (java.util.Random. (System/currentTimeMillis))]
+      (apply insert-records "Handwriting.Result"
+                   (map hash-map
+                        (repeat :ixData) (range ixStart ixEnd)
+                        (repeat :ixRun) (repeat runId)
+                        (repeat :sClassification) (repeatedly #(if (> errorRate (. rand nextDouble)) (. rand nextInt 10) actual)))))))
+
 (defn get-db-data [ixData]
   (with-query-results rs ["SELECT * FROM Handwriting.Data WHERE Data.ixData = ?" ixData] (:bdata rs)))
 
