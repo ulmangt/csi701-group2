@@ -75,6 +75,11 @@ public class ConfusionMatrix
 		}
 	}
 	
+	public List<Data> get( int guess, int actual )
+	{
+		return get( String.valueOf( guess ), String.valueOf( actual ) );
+	}
+	
 	public List<Data> get( String guess, String actual )
 	{
 		return map.get( new ConfusionKey( guess, actual ) );

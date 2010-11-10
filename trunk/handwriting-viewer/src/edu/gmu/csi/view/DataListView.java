@@ -1,7 +1,6 @@
 package edu.gmu.csi.view;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -16,14 +15,11 @@ import org.eclipse.ui.part.ViewPart;
 
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IViewReference;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
 import edu.gmu.csi.database.PopulateDataListViewJob;
+import edu.gmu.csi.manager.ViewUtil;
 import edu.gmu.csi.model.Data;
 import edu.gmu.csi.model.SourceRoot;
 import edu.gmu.csi.model.TreeNode;
@@ -56,7 +52,7 @@ public class DataListView extends ViewPart
 			{
 				if ( event.getSelection( ).isEmpty( ) )
 				{
-					getCharacterImageView( ).setSelection( null );
+					ViewUtil.getCharacterImageView( ).setSelection( null );
 				}
 				if ( event.getSelection( ) instanceof IStructuredSelection )
 				{
@@ -73,7 +69,7 @@ public class DataListView extends ViewPart
 						}
 					}
 					
-					getCharacterImageView( ).setSelection( selectedData );
+					ViewUtil.getCharacterImageView( ).setSelection( selectedData );
 				}
 			}
 		} );
@@ -87,30 +83,6 @@ public class DataListView extends ViewPart
 		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
 	}
 
-	protected CharacterImageView getCharacterImageView( )
-	{
-		IWorkbench workbench = PlatformUI.getWorkbench( );
-		if ( workbench == null ) return null;
-
-		IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow( );
-		if ( workbenchWindow == null ) return null;
-
-		IWorkbenchPage workbenchPage = workbenchWindow.getActivePage( );
-		if ( workbenchPage == null ) return null;
-
-		List<IViewReference> viewRefList = Arrays.asList( workbenchPage.getViewReferences( ) );
-
-		for ( IViewReference viewRef : viewRefList )
-		{
-			if ( CharacterImageView.ID.equals( viewRef.getId( ) ) )
-			{
-				return ( CharacterImageView ) viewRef.getView( false );
-			}
-		}
-
-		return null;
-	}
-
 	public void setRoot( SourceRoot root )
 	{
 		treeViewer.setInput( root );
@@ -121,8 +93,7 @@ public class DataListView extends ViewPart
 	@Override
 	public void setFocus( )
 	{
-		// TODO Auto-generated method stub
-
+		// do nothing
 	}
 
 	private class DataListLabelProvider extends LabelProvider

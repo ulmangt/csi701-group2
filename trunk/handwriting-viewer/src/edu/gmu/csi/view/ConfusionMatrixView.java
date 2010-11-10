@@ -1,5 +1,8 @@
 package edu.gmu.csi.view;
 
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -13,13 +16,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.gmu.csi.model.ConfusionMatrix;
+import edu.gmu.csi.model.Result;
+
 public class ConfusionMatrixView extends ViewPart
 {
 	public static final String ID = "handwriting-viewer.confusionmatrixview";
 
 	private Canvas canvas;
 	
-	private int[][] confusionMatrix = new int[10][10]; //[x][y] //[truth][classification]
+	private ReentrantLock lock;
+	private volatile boolean matrixUpdated;
+	private ConfusionMatrix newConfusionMatrix;
+	private ConfusionMatrix confusionMatrix;
 	
 	@Override
 	public void createPartControl( Composite parent )
@@ -36,6 +45,19 @@ public class ConfusionMatrixView extends ViewPart
 			@Override
 			public void paintControl( PaintEvent e )
 			{
+				if ( matrixUpdated )
+				{
+					lock.lock( );
+					try
+					{
+						confusionMatrix = newConfusionMatrix;
+					}
+					finally
+					{
+						lock.unlock( );
+					}
+				}
+				
 				GC gc = e.gc;
 				
 				int width = e.width;
@@ -77,17 +99,27 @@ public class ConfusionMatrixView extends ViewPart
 				for ( int x = 2 ; x < rows ; x++ )
 				{
 					for ( int y = 2 ; y < cols ; y++ )
-					{
-						String s = String.valueOf( confusionMatrix[x-2][y-2] );
-						Point p = gc.stringExtent( s );
-						
-						if ( p.x > widthStep || p.y > heightStep )
-							s = "";
-						
+					{	
 						gc.setForeground( colorForeground );
 						gc.drawRectangle( (int) (x * widthStep), (int) (y * heightStep), (int) widthStep, (int) heightStep );
-						gc.setForeground( color );
-						gc.drawString( s, (int) (x * widthStep + widthStep / 2 - p.x / 2), (int) (y * heightStep + heightStep / 2 - p.y / 2), true );
+					}
+				}
+				
+				if ( confusionMatrix != null )
+				{
+					for ( int x = 2 ; x < rows ; x++ )
+					{
+						for ( int y = 2 ; y < cols ; y++ )
+						{
+							String s = String.valueOf( confusionMatrix.get( x-2, y-2 ) );
+							Point p = gc.stringExtent( s );
+							
+							if ( p.x > widthStep || p.y > heightStep )
+								s = "";
+							
+							gc.setForeground( colorForeground );
+							gc.drawRectangle( (int) (x * widthStep), (int) (y * heightStep), (int) widthStep, (int) heightStep );
+						}
 					}
 				}
 			}
@@ -134,5 +166,27 @@ public class ConfusionMatrixView extends ViewPart
 	public void setFocus( )
 	{
 		// do nothing
+	}
+	
+	public void setConfusionMatrix( List<Result> results )
+	{
+		this.lock.lock( );
+		try
+		{
+			if ( results == null )
+			{
+				this.newConfusionMatrix = null;
+			}
+			else
+			{
+				this.newConfusionMatrix = new ConfusionMatrix( results );
+			}
+			
+			this.matrixUpdated = true;
+		}
+		finally
+		{
+			this.lock.unlock( );
+		}
 	}
 }

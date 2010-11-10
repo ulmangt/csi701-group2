@@ -26,6 +26,7 @@ import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 
 import edu.gmu.csi.database.PopulateRunListJob;
 import edu.gmu.csi.manager.DataResultManager;
+import edu.gmu.csi.manager.ViewUtil;
 import edu.gmu.csi.model.IdKeyValue;
 import edu.gmu.csi.model.Result;
 import edu.gmu.csi.model.Run;
@@ -128,7 +129,7 @@ public class RunListView extends ViewPart
 				
 				if ( event.getSelection( ).isEmpty( ) )
 				{
-					//TODO do something here
+					ViewUtil.getConfusionMatrixView( ).setConfusionMatrix( null );
 				}
 				else if ( event.getSelection( ) instanceof IStructuredSelection )
 				{
@@ -140,24 +141,29 @@ public class RunListView extends ViewPart
 						
 						if ( selected instanceof Run )
 						{	
-							Run run = ( Run ) selected;
-							
-							Future<List<Result>> futureResults = DataResultManager.getInstance( ).getResults( run );
+							final Run run = ( Run ) selected;
 						
-							try
+							(new Thread( )
 							{
-								System.out.println( futureResults.get( ).size( ) );
-							}
-							catch ( InterruptedException e )
-							{
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							catch ( ExecutionException e )
-							{
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+								@Override
+								public void run( )
+								{
+									Future<List<Result>> futureResults = DataResultManager.getInstance( ).getResults( run );
+									
+									try
+									{
+										ViewUtil.getConfusionMatrixView( ).setConfusionMatrix( futureResults.get( ) );
+									}
+									catch ( InterruptedException e )
+									{
+										e.printStackTrace();
+									}
+									catch ( ExecutionException e )
+									{
+										e.printStackTrace();
+									}
+								}
+							}).start( );
 							
 							return;
 						}
@@ -178,8 +184,7 @@ public class RunListView extends ViewPart
 	@Override
 	public void setFocus( )
 	{
-		// TODO Auto-generated method stub
-
+		// do nothing
 	}
 
 	public void setInput( RunRoot results )
