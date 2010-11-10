@@ -8,7 +8,6 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -25,27 +24,6 @@ public class ConfusionMatrixView extends ViewPart
 	@Override
 	public void createPartControl( Composite parent )
 	{
-//		MigLayout layout = new MigLayout("gap 0 0, novisualpadding, fill");
-//		parent.setLayout( layout );
-//		
-//		Button topLabel = new Button( parent, SWT.NONE | SWT.CENTER | SWT.BORDER );
-//		topLabel.setText( "Truth" );
-//		topLabel.setLayoutData( "cell 0 1 1 9" );
-//		
-//		Button sideLabel = new Button( parent, SWT.NONE | SWT.CENTER | SWT.BORDER | SWT.VERTICAL );
-//		sideLabel.setText( "Classification" );
-//		sideLabel.setLayoutData( "cell 1 0 9 1" );
-//		
-//		for ( int x = 0 ; x < 10 ; x++ )
-//		{
-//			for ( int y = 0 ; y < 10 ; y++ )
-//			{
-//				Button label = new Button( parent, SWT.NONE | SWT.CENTER | SWT.BORDER );
-//				label.setText( x + " " + y );
-//				label.setLayoutData( String.format( "cell %d %d", x+1, y+1 ) );
-//			}
-//		}
-		
 		Display display = Display.getDefault( );
 		
 		final Color colorForeground = display.getSystemColor( SWT.COLOR_WIDGET_FOREGROUND );
@@ -70,7 +48,6 @@ public class ConfusionMatrixView extends ViewPart
 				float heightStep = height / cols;
 			
 				gc.setForeground( color );
-//				gc.setBackground( color );
 				gc.setLineWidth( 2 );
 				
 				gc.setForeground( color );
@@ -122,15 +99,13 @@ public class ConfusionMatrixView extends ViewPart
 			@Override
 			public void mouseDoubleClick( MouseEvent e )
 			{
-				// TODO Auto-generated method stub
-				
+				// do nothing
 			}
 
 			@Override
 			public void mouseDown( MouseEvent e )
 			{
-				// TODO Auto-generated method stub
-				
+				// do nothing
 			}
 
 			@Override
@@ -158,9 +133,6 @@ public class ConfusionMatrixView extends ViewPart
 	@Override
 	public void setFocus( )
 	{
-		// TODO Auto-generated method stub
-		
+		// do nothing
 	}
-
-
 }

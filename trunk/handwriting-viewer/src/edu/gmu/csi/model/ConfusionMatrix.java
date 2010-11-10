@@ -25,15 +25,6 @@ public class ConfusionMatrix
 			this.actual = actual;
 		}
 		
-		public String getGuess( )
-		{
-			return guess;
-		}
-		public String getActual( )
-		{
-			return actual;
-		}
-
 		@Override
 		public int hashCode( )
 		{
@@ -82,5 +73,10 @@ public class ConfusionMatrix
 			
 			data.add( result.getData( ) );
 		}
+	}
+	
+	public List<Data> get( String guess, String actual )
+	{
+		return map.get( new ConfusionKey( guess, actual ) );
 	}
 }

@@ -78,13 +78,13 @@ public class DataListView extends ViewPart
 			}
 		} );
 
-//		IWorkbenchPartSite site = getSite( );
-//		IWorkbenchSiteProgressService siteService = ( IWorkbenchSiteProgressService ) site.getAdapter( IWorkbenchSiteProgressService.class );
-//
-//		PopulateDataListViewJob job = new PopulateDataListViewJob( this );
-//
-//		siteService.showInDialog( site.getShell( ), job );
-//		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
+		IWorkbenchPartSite site = getSite( );
+		IWorkbenchSiteProgressService siteService = ( IWorkbenchSiteProgressService ) site.getAdapter( IWorkbenchSiteProgressService.class );
+
+		PopulateDataListViewJob job = new PopulateDataListViewJob( this );
+
+		siteService.showInDialog( site.getShell( ), job );
+		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
 	}
 
 	protected CharacterImageView getCharacterImageView( )
