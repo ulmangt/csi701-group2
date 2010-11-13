@@ -49,33 +49,13 @@
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.swt"/>
-      <plugin id="org.eclipse.swt.gtk.linux.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.swt.win32.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.ui"/>
       <plugin id="org.eclipse.ui.workbench"/>
    </plugins>
 
    <configurations>
-      <plugin id="com.ibm.icu" autoStart="false" startLevel="0" />
       <plugin id="handwriting-viewer" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.core.commands" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.core.contenttype" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.core.databinding" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.core.databinding.observable" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.core.databinding.property" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.core.expressions" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.core.jobs" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.core.runtime" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.equinox.app" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.equinox.common" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.equinox.preferences" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.equinox.registry" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.help" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.jface" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.jface.databinding" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.osgi" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.swt" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.ui" autoStart="false" startLevel="0" />
-      <plugin id="org.eclipse.ui.workbench" autoStart="false" startLevel="0" />
    </configurations>
 
 </product>
