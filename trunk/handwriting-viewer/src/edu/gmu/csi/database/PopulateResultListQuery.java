@@ -42,7 +42,14 @@ public class PopulateResultListQuery extends DatabaseQuery
 
 			Data data = manager.getData( ixData );
 			
-			results.add( new Result( ixResult, data, run, sClassification ) );
+			if ( data != null )
+			{
+				results.add( new Result( ixResult, data, run, sClassification ) );
+			}
+			else
+			{
+				System.out.printf( "Got Result %d for Data %d which does not exist.%n", ixResult, ixData );
+			}
 		}
 	}
 	
