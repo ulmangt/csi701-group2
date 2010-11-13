@@ -252,7 +252,5 @@ public class ConfusionMatrixView extends ViewPart
 				canvas.redraw( );
 			}
 		});
-		
-		canvas.redraw( );
 	}
 }
