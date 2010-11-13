@@ -19,7 +19,7 @@ public class DatabaseManager
 	private static final int port = 3306;
 	private static final String user = "test";
 	private static final String pass = "csi710";
-
+	
 	public DatabaseManager( )
 	{
 		try

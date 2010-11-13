@@ -85,8 +85,8 @@ public class ConfusionMatrixView extends ViewPart
 				int rows = 12;
 				int cols = 12;
 				
-				float widthStep = width / rows;
-				float heightStep = height / cols;
+				float widthStep = (float) width / (float) rows;
+				float heightStep = (float) height / (float) cols;
 			
 				gc.setForeground( color );
 				gc.setLineWidth( 2 );
@@ -101,7 +101,7 @@ public class ConfusionMatrixView extends ViewPart
 					if ( p.x > widthStep || p.y > heightStep )
 						s = "";
 					
-					gc.drawString( s, (int) (x * widthStep + widthStep / 2 - p.x / 2), (int) (heightStep + heightStep / 2 - p.y / 2)  );
+					gc.drawString( s, (int) (x * widthStep + widthStep / 2.0 - p.x / 2.0), (int) (heightStep + heightStep / 2.0 - p.y / 2.0)  );
 				}
 				
 				for ( int y = 2 ; y < rows ; y++ )
@@ -112,7 +112,7 @@ public class ConfusionMatrixView extends ViewPart
 					if ( p.x > widthStep || p.y > heightStep )
 						s = "";
 					
-					gc.drawString( s, (int) (widthStep + widthStep / 2 - p.x / 2), (int) (y * heightStep + heightStep / 2 - p.y / 2)  );
+					gc.drawString( s, (int) (widthStep + widthStep / 2.0 - p.x / 2.0), (int) (y * heightStep + heightStep / 2.0 - p.y / 2.0)  );
 				}
 				
 				for ( int x = 2 ; x < rows ; x++ )
@@ -144,17 +144,17 @@ public class ConfusionMatrixView extends ViewPart
 								s = "";
 							
 							gc.setForeground( color );
-							gc.drawString( s, (int) (x * widthStep + widthStep / 2 - p.x / 2), (int) (y * heightStep + heightStep / 2 - p.y / 2), true );
+							gc.drawString( s, (int) (x * widthStep + widthStep / 2.0 - p.x / 2.0), (int) (y * heightStep + heightStep / 2.0 - p.y / 2.0), true );
 						}
 					}
 				}
 				
 				Point p = gc.stringExtent( "Classifier" );
-				gc.drawString( "Classifier", (int) (2*widthStep + ( width - 2*widthStep ) / 2 - p.x/2), (int) (heightStep/2 - p.y/2) );
+				gc.drawString( "Classifier", (int) (2*widthStep + ( width - 2*widthStep ) / 2.0 - p.x/2.0), (int) (heightStep/2.0 - p.y/2.0) );
 				
 				p = gc.stringExtent( "Truth" );
 		        gc.setTransform( transform );
-				gc.drawString( "Truth", (int) (2*heightStep + ( height - 2*heightStep ) / 2 - p.x/2), (int) ( -widthStep/2 - p.y/2 ) );
+				gc.drawString( "Truth", (int) (2*heightStep + ( height - 2*heightStep ) / 2.0 - p.x/2.0), (int) ( -widthStep/2.0 - p.y/2.0 ) );
 			}
 		} );
 		
@@ -182,8 +182,8 @@ public class ConfusionMatrixView extends ViewPart
 				int rows = 12;
 				int cols = 12;
 				
-				float widthStep = width / rows;
-				float heightStep = height / cols;
+				float widthStep = (float) width / (float) rows;
+				float heightStep = (float) height / (float) cols;
 				
 				int xIndex = (int) Math.floor(e.x / widthStep) - 2;
 				int yIndex = (int) Math.floor(e.y / heightStep) - 2;
@@ -252,5 +252,7 @@ public class ConfusionMatrixView extends ViewPart
 				canvas.redraw( );
 			}
 		});
+		
+		canvas.redraw( );
 	}
 }
