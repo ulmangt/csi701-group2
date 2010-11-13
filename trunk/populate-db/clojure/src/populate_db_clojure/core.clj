@@ -46,6 +46,10 @@
 (def db-port 3306)
 (def db-name "test")
 
+;(def db-host "localhost")
+;(def db-port 3306)
+;(def db-name "Handwriting")
+
 (def db {:classname "com.mysql.jdbc.Driver"
          :subprotocol "mysql"
          :subname (str "//" db-host ":" db-port "/" db-name)
@@ -99,7 +103,7 @@
   ([file-name ixDataSet sCharacter batch-size]
     (with-open [^BufferedReader in (get-reader-gz file-name)]
       (let [rows (line-seq in)
-            row-batches (partition batch-size rows)
+            row-batches (partition-all batch-size rows)
             iRows 28
             iCols 28]
         (dorun
