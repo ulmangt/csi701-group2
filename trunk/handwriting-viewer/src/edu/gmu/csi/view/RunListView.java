@@ -183,7 +183,7 @@ public class RunListView extends ViewPart
 	@Override
 	public void setFocus( )
 	{
-		// do nothing
+		tableViewer.getTree( ).setFocus( );
 	}
 
 	public void setInput( RunRoot results )

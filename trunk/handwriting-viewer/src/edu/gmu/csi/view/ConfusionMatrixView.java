@@ -216,7 +216,7 @@ public class ConfusionMatrixView extends ViewPart
 	@Override
 	public void setFocus( )
 	{
-		// do nothing
+		canvas.setFocus( );
 	}
 	
 	public void setConfusionMatrix( List<Result> results )
