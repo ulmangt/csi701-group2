@@ -32,6 +32,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import edu.gmu.csi.manager.CharacterDataManager;
 import edu.gmu.csi.manager.DataManager;
+import edu.gmu.csi.manager.ViewUtil;
 
 import edu.gmu.csi.model.Character;
 import edu.gmu.csi.model.Data;
@@ -54,7 +55,9 @@ public class ClassificatonView extends ViewPart
 	protected boolean mouseDown = false;
 	protected ReentrantLock imageLock;
 	
+	protected int selectedCount = -1;
 	protected int maxCount;
+	protected List<List<Data>> countData;
 	protected int[] counts = new int[10];
 	protected ReentrantLock resultLock;
 	
@@ -121,6 +124,13 @@ public class ClassificatonView extends ViewPart
 					int barHeight = (int) ( fraction * ( height - legendHeight ) );
 					
 					gc.fillRectangle( x * widthStep, height - barHeight - legendHeight, barWidth, barHeight );
+				}
+				
+				if ( selectedCount != -1 )
+				{
+					gc.setForeground( Display.getDefault( ).getSystemColor(SWT.COLOR_RED ) );
+					int barWidth = selectedCount == 9 ? widthStep-2 : widthStep;
+					gc.drawRectangle( selectedCount * widthStep, height - legendHeight, barWidth, legendHeight-4 );
 				}
 			}
 			finally
@@ -305,6 +315,50 @@ public class ClassificatonView extends ViewPart
 				mouseDown = false;
 			}
 		});
+		
+		histogramCanvas.addMouseListener( new MouseListener( )
+		{
+			@Override
+			public void mouseDoubleClick( MouseEvent e )
+			{
+			}
+
+			@Override
+			public void mouseDown( MouseEvent e )
+			{
+				resultLock.lock( );
+				try
+				{
+					Rectangle r = canvas.getBounds( );
+					double widthX = r.width / 10.;
+					
+					int indexX = (int) ( e.x / widthX );
+					
+					if ( indexX < 0 ) indexX = 0;
+					if ( indexX >= 10 ) indexX = 9;
+					
+					System.out.println( indexX );
+					
+					selectedCount = indexX;
+					 
+					if ( countData != null )
+					{
+						ViewUtil.getCharacterImageView( ).setSelection( countData.get( selectedCount ) );
+					}
+				}
+				finally
+				{
+					resultLock.unlock( );
+				}
+				
+				redrawHistogramCanvas( );
+			}
+
+			@Override
+			public void mouseUp( MouseEvent e )
+			{
+			}
+		});
 	}
 
 	@Override
@@ -382,7 +436,7 @@ public class ClassificatonView extends ViewPart
 							
 							if ( closestCharacters.size( ) < NEAREST_SAMPLES )
 							{
-								closestCharacters.add( new CharacterDistance( character, distance ) );
+								closestCharacters.add( new CharacterDistance( character, trainingData, distance ) );
 								if ( distance > largestDistance )
 									largestDistance = distance;
 							}
@@ -391,7 +445,7 @@ public class ClassificatonView extends ViewPart
 								if ( distance < largestDistance )
 								{
 									closestCharacters.pollLast( );
-									closestCharacters.add( new CharacterDistance( character, distance ) );
+									closestCharacters.add( new CharacterDistance( character, trainingData, distance ) );
 									largestDistance = closestCharacters.last( ).getDistance( );
 								}
 							}
@@ -407,11 +461,16 @@ public class ClassificatonView extends ViewPart
 					}
 				}
 				
+				List<List<Data>> dataArray = new ArrayList<List<Data>>( );
+				for ( int i = 0 ; i < 10 ; i++ )
+					dataArray.add( new ArrayList<Data>( ) );
+				
 				int[] countsArray = new int[10];
 				
 				for ( CharacterDistance character : closestCharacters )
 				{
 					int index = Integer.parseInt( character.getCharacter( ).getCharacter( ) );
+					dataArray.get( index ).add( character.getData( ) );
 					countsArray[index]++;
 				}
 				
@@ -430,6 +489,8 @@ public class ClassificatonView extends ViewPart
 				resultLock.lock( );
 				try
 				{
+					selectedCount = -1;
+					countData = dataArray;
 					maxCount = highestCount;
 					counts = countsArray;
 				}
@@ -437,6 +498,8 @@ public class ClassificatonView extends ViewPart
 				{
 					resultLock.unlock( );
 				}
+				
+				redrawHistogramCanvas( );
 			}
 		}).start( );
 	}
@@ -484,11 +547,13 @@ public class ClassificatonView extends ViewPart
 
 	public class CharacterDistance implements Comparable<CharacterDistance>
 	{
+		protected Data data;
 		protected Character character;
 		protected double distance;
 		
-		public CharacterDistance( Character character, double distance )
+		public CharacterDistance( Character character, Data data, double distance )
 		{
+			this.data = data;
 			this.character = character;
 			this.distance = distance;
 		}
@@ -508,6 +573,11 @@ public class ClassificatonView extends ViewPart
 			{
 				return 0;
 			}
+		}
+		
+		public Data getData( )
+		{
+			return data;
 		}
 		
 		public Character getCharacter( )
