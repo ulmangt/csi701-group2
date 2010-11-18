@@ -57,6 +57,10 @@
          :password "csi710"})
 
 
+(defn get-reader-txt [^String file-name]
+  "Returns a BufferedReader for the given gzipped file name."
+  (-> file-name File. FileInputStream. InputStreamReader. BufferedReader.))
+
 (defn get-reader-gz [^String file-name]
   "Returns a BufferedReader for the given gzipped file name."
   (-> file-name File. FileInputStream. GZIPInputStream. InputStreamReader. BufferedReader.))
@@ -81,6 +85,9 @@
    as an unsigned byte, equals the original unsigned-byte."
   (byte (if (<= unsigned-byte 127) unsigned-byte (- unsigned-byte 256) )))
 
+(defn read-character-string-tokenized [tokens]
+    (byte-array (map #(unsigned-to-signed-byte (* 255 (Integer/parseInt %))) tokens)))
+
 (defn read-character-string-mnist [^String line]
   (let [tokens (split #"[ ]+" line)]
     (byte-array (map #(unsigned-to-signed-byte (Integer/parseInt %)) tokens))))
@@ -92,6 +99,26 @@
 (defn get-sql-insert-values [ixDataSet sCharacter iRows iCols bData]
   "Returns a vector containing values for a single character to be inserted into the Handwriting.Data table."
   (vector nil ixDataSet sCharacter iRows iCols (ByteArrayInputStream. bData)))
+
+(defn sql-insert-characters-classroom
+  ([file-name ixDataSet sCharacter]
+    (sql-insert-characters-classroom file-name ixDataSet sCharacter 500))
+  ([file-name ixDataSet sCharacter batch-size]
+    (with-open [^BufferedReader in (get-reader-txt file-name)]
+      (let [row (first (line-seq in))
+            tokens (split #"[ ]+" row)
+            iRows 28
+            iCols 28
+            rows (partition (* iRows iCols) tokens)
+            row-batches (partition-all batch-size rows)]
+        (dorun
+          (map (fn [row-batch] 
+                 (apply insert-rows
+                 "Handwriting.Data"
+                 (map (fn [bData] (get-sql-insert-values ixDataSet sCharacter iRows iCols (read-character-string-tokenized bData)))
+                      row-batch)))
+               row-batches ))))))
+
 
 (defn sql-insert-characters-mnist
   "Inserts all character data from the gzipped MNIST file and inserts it into the database.
