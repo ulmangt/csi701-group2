@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 
+import edu.gmu.csi.manager.DataManager;
 import edu.gmu.csi.model.DataSet;
 import edu.gmu.csi.model.SourceRoot;
 import edu.gmu.csi.model.Source;
@@ -40,6 +41,8 @@ public class PopulateDataListViewJob extends Job
 		PopulateCharacterAndDataQuery populateDataQuery = new PopulateCharacterAndDataQuery( dataSetList );
 		populateDataQuery.runQuery( );
 
+		DataManager.getInstance( ).putAllCharacterData( populateDataQuery.getCharacters( ) );
+		
 		Display.getDefault( ).asyncExec( new Runnable( )
 		{
 			public void run( )
