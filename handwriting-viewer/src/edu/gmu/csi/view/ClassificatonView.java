@@ -134,6 +134,8 @@ public class ClassificatonView extends ViewPart
 			@Override
 			public void mouseMove( MouseEvent e )
 			{
+				int brushWidth = 1;
+				
 				if ( mouseDown )
 				{
 					Rectangle r = canvas.getBounds( );
@@ -158,7 +160,20 @@ public class ClassificatonView extends ViewPart
 
 						if ( data.getPixel( imageX, imageY ) != -1 )
 						{
-							data.setPixel( imageX, imageY, -1 );
+							for ( int dx = -brushWidth ; dx <= brushWidth ; dx++ )
+							{
+								for ( int dy = -brushWidth ; dy <= brushWidth ; dy++ )
+								{
+									int x = dx + imageX;
+									int y = dy + imageY;
+									
+									if ( x < 0 || x >= IMAGE_WIDTH || y < 0 || y >= IMAGE_HEIGHT )
+										continue;
+									
+									data.setPixel( imageX, imageY, -1 );
+								}
+							}
+							
 							modified = true;
 						}
 					}
@@ -166,7 +181,20 @@ public class ClassificatonView extends ViewPart
 					{
 						if ( data.getPixel( imageX, imageY ) != 0 )
 						{
-							data.setPixel( imageX, imageY, 0 );
+							for ( int dx = -brushWidth ; dx <= brushWidth ; dx++ )
+							{
+								for ( int dy = -brushWidth ; dy <= brushWidth ; dy++ )
+								{
+									int x = dx + imageX;
+									int y = dy + imageY;
+									
+									if ( x < 0 || x >= IMAGE_WIDTH || y < 0 || y >= IMAGE_HEIGHT )
+										continue;
+									
+									data.setPixel( imageX, imageY, 0 );
+								}
+							}
+							
 							modified = true;
 						}
 					}
