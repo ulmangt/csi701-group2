@@ -45,8 +45,11 @@ public class ClassificatonView extends ViewPart
 	public static final int IMAGE_WIDTH = 28;
 		
 	protected CharacterImagePainter painter;
+	protected HistogramPainter histogramPainter;
+	
 	protected PaletteData palette;
 	protected Canvas canvas;
+	protected Canvas histogramCanvas;
 	protected Image image;
 	protected boolean mouseDown = false;
 	private ReentrantLock imageLock;
@@ -65,6 +68,37 @@ public class ClassificatonView extends ViewPart
 		image = createBlankImage( );
 		
 		imageLock = new ReentrantLock( );
+	}
+	
+	private class HistogramPainter implements PaintListener
+	{
+		@Override
+		public void paintControl( PaintEvent e )
+		{
+			Point size = histogramCanvas.getSize( );
+			int width = size.x;
+			int height = size.y;
+			
+			int rows = 10;
+
+			GC gc = e.gc;
+			
+			int widthStep = width / rows;
+			int legendHeight = 20;
+			
+			for ( int x = 0 ; x < rows ; x++ )
+			{
+				String s = String.valueOf( x );
+				Point p = gc.stringExtent( s );
+				
+				if ( p.x > widthStep || p.y > legendHeight )
+					s = "";
+				
+				gc.drawString( s, (int) (x * widthStep + widthStep / 2.0 - p.x / 2.0), (int) ( height - legendHeight / 2 - p.y / 2.0 )  );
+				
+				gc.drawRectangle( x * widthStep, height - legendHeight, x == 9 ? widthStep-2 : widthStep, legendHeight-4 );
+			}
+		}
 	}
 	
 	private class CharacterImagePainter implements PaintListener
@@ -108,10 +142,15 @@ public class ClassificatonView extends ViewPart
 	{
 		parent.setLayout( new MigLayout( ) );
 		
-		canvas = new Canvas( parent, SWT.DOUBLE_BUFFERED );
-		canvas.setLayoutData( "align center, grow, push, wrap" );
+		canvas = new Canvas( parent, SWT.DOUBLE_BUFFERED | SWT.BORDER );
+		canvas.setLayoutData( "align center, growy 100, growx 100, pushy 100, pushx 100, wrap" );
 		painter = new CharacterImagePainter( );
 		canvas.addPaintListener( painter );
+		
+		histogramCanvas = new Canvas( parent, SWT.DOUBLE_BUFFERED | SWT.BORDER );
+		histogramCanvas.setLayoutData( "align center, growy 30, growx 100, pushy 30, pushx 100, wrap" );
+		histogramPainter = new HistogramPainter( );
+		histogramCanvas.addPaintListener( histogramPainter );
 		
 		Button classify = new Button( parent, SWT.PUSH );
 		classify.setText( "Classify" );
@@ -168,7 +207,7 @@ public class ClassificatonView extends ViewPart
 									if ( x < 0 || x >= IMAGE_WIDTH || y < 0 || y >= IMAGE_HEIGHT )
 										continue;
 									
-									data.setPixel( imageX, imageY, -1 );
+									data.setPixel( x, y, -1 );
 								}
 							}
 							
@@ -189,7 +228,7 @@ public class ClassificatonView extends ViewPart
 									if ( x < 0 || x >= IMAGE_WIDTH || y < 0 || y >= IMAGE_HEIGHT )
 										continue;
 									
-									data.setPixel( imageX, imageY, 0 );
+									data.setPixel( x, y, 0 );
 								}
 							}
 							
