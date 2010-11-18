@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -43,9 +45,7 @@ public class ClassificatonView extends ViewPart
 	
 	public static final int IMAGE_HEIGHT = 28;
 	public static final int IMAGE_WIDTH = 28;
-	
-	public static final int SAMPLES_PER_CHARACTER = 100;
-	
+		
 	protected CharacterImagePainter painter;
 	protected PaletteData palette;
 	protected Canvas canvas;
@@ -231,14 +231,20 @@ public class ClassificatonView extends ViewPart
 		});
 	}
 	
-	protected void classify( )
+	protected int classify( )
 	{
-		int[] data = convertSignedToUnsigned( image.getImageData( ).data, 3 );
+		final int SAMPLES_PER_CHARACTER = 100;
+		final int NEAREST_SAMPLES = 50;
 		
-		System.out.println( data.length + " " + ( 28 * 28 ) + " " + Arrays.toString( data ) );
+		int[] data = flipValues( convertSignedToUnsigned( image.getImageData( ).data, 3 ) );
+		
+//		System.out.println( data.length + " " + ( 28 * 28 ) + " " + Arrays.toString( data ) );
 		
 		DataManager dataManager = DataManager.getInstance( );
 		CharacterDataManager characterManager = CharacterDataManager.getInstance( );
+		
+		NavigableSet<CharacterDistance> closestCharacters = new TreeSet<CharacterDistance>( );
+		double largestDistance = 0;
 		
 		for ( int i = 0 ; i < 10 ; i++ )
 		{
@@ -248,7 +254,7 @@ public class ClassificatonView extends ViewPart
 			
 			List<Data> dataList = new ArrayList<Data>( character.getDataList( ) );
 			//Collections.shuffle( dataList ); // for now don't randomize
-			List<Data> trainingSet = dataList.subList( 0, Math.min( dataList.size(), 1 ) );
+			List<Data> trainingSet = dataList.subList( 0, Math.min( dataList.size(), SAMPLES_PER_CHARACTER ) );
 			
 			for ( Data trainingData : trainingSet )
 			{
@@ -258,8 +264,24 @@ public class ClassificatonView extends ViewPart
 				{
 					characterData = characterManager.getCharacterData( trainingData ).get( );
 					int[] trainingDataArray = convertSignedToUnsigned( characterData.getImageData( ) );
-					System.out.println( i + " " + trainingDataArray.length + " " + Arrays.toString( trainingDataArray ) );
+//					System.out.println( i + " " + trainingDataArray.length + " " + Arrays.toString( trainingDataArray ) );
+					double distance = calculateDistance( trainingDataArray, data );
 					
+					if ( closestCharacters.size( ) < NEAREST_SAMPLES )
+					{
+						closestCharacters.add( new CharacterDistance( character, distance ) );
+						if ( distance > largestDistance )
+							largestDistance = distance;
+					}
+					else
+					{
+						if ( distance < largestDistance )
+						{
+							closestCharacters.pollLast( );
+							closestCharacters.add( new CharacterDistance( character, distance ) );
+							largestDistance = closestCharacters.last( ).getDistance( );
+						}
+					}
 				}
 				catch ( InterruptedException e )
 				{
@@ -271,6 +293,28 @@ public class ClassificatonView extends ViewPart
 				}
 			}
 		}
+		
+		int[] counts = new int[10];
+		
+		for ( CharacterDistance character : closestCharacters )
+		{
+			int index = Integer.parseInt( character.getCharacter( ).getCharacter( ) );
+			counts[index]++;
+		}
+		
+		int highestIndex = 0;
+		int highestCount = 0;
+		for ( int i = 0 ; i < 10 ; i++ )
+		{
+			int count = counts[i];
+			if ( count > highestCount )
+			{
+				highestCount = count;
+				highestIndex = i;
+			}
+		}
+		
+		return highestIndex;
 	}
 	
 	protected int[] convertSignedToUnsigned( byte[] data )
@@ -291,5 +335,65 @@ public class ClassificatonView extends ViewPart
 		
 		return converted;
 	}
+	
+	protected int[] flipValues( int[] data )
+	{
+		for ( int i = 0 ; i < data.length ; i++ )
+		{
+			data[i] = 255 - data[i];
+		}
+		
+		return data;
+	}
+	
+	protected double calculateDistance( int[] data1, int[] data2 )
+	{
+		double distance = 0;
+		
+		for ( int i = 0 ; i < data1.length ; i++ )
+		{
+			distance += Math.abs( data1[i] - data2[i] );
+		}
+		
+		return distance;
+	}
 
+	public class CharacterDistance implements Comparable<CharacterDistance>
+	{
+		protected Character character;
+		protected double distance;
+		
+		public CharacterDistance( Character character, double distance )
+		{
+			this.character = character;
+			this.distance = distance;
+		}
+
+		@Override
+		public int compareTo( CharacterDistance o )
+		{
+			if ( distance < o.distance )
+			{
+				return -1;
+			}
+			else if ( distance > o.distance )
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		
+		public Character getCharacter( )
+		{
+			return character;
+		}
+		
+		public double getDistance( )
+		{
+			return distance;
+		}
+	}
 }
