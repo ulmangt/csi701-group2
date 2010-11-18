@@ -21,6 +21,8 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -28,14 +30,21 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -193,7 +202,7 @@ public class ClassificatonView extends ViewPart
 
 	
 	@Override
-	public void createPartControl( Composite parent )
+	public void createPartControl( final Composite parent )
 	{
 		parent.setLayout( new MigLayout( ) );
 		
@@ -263,14 +272,101 @@ public class ClassificatonView extends ViewPart
 		
 		load.addListener( SWT.Selection, new Listener( )
 		{
-
 			@Override
 			public void handleEvent( Event event )
 			{
-				// TODO Auto-generated method stub
+				final Shell dialog = new Shell ( parent.getShell( ), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL );
+				dialog.setText( "Upload Handwriting Sample" );
+				dialog.setLayout( new MigLayout( ) );
 				
+				Label label = new Label (dialog, SWT.NONE);
+				label.setText ("Name:");
+				label.setLayoutData( "cell 0 0 1 1" );
+				
+				final Text nameText = new Text (dialog, SWT.BORDER);
+				nameText.setText( "anonymous" );
+				nameText.setLayoutData( "cell 1 0 2 1, growx, pushx" );
+				
+				Label labelAge = new Label (dialog, SWT.NONE);
+				labelAge.setText ("Age:");
+				labelAge.setLayoutData( "cell 0 1 1 1" );
+				
+				final Text ageText = new Text (dialog, SWT.BORDER);
+				ageText.setText( "" );
+				ageText.setLayoutData( "cell 1 1 2 1, growx, pushx" );
+				
+				Label labelHanded = new Label (dialog, SWT.NONE);
+				labelHanded.setText ("Handedness:");
+				labelHanded.setLayoutData( "cell 0 2 1 1" );
+				
+				final Combo comboHanded = new Combo( dialog, SWT.DROP_DOWN | SWT.BORDER);
+				comboHanded.setLayoutData( "cell 1 2 2 1, growx, pushx" );
+				comboHanded.add( "" );
+				comboHanded.add( "Right" );
+				comboHanded.add( "Left" );
+				
+				Label labelGender = new Label (dialog, SWT.NONE);
+				labelGender.setText ("Gender:");
+				labelGender.setLayoutData( "cell 0 3 1 1" );
+				
+				final Combo comboGender = new Combo( dialog, SWT.DROP_DOWN | SWT.BORDER);
+				comboGender.setLayoutData( "cell 1 3 2 1, growx, pushx" );
+				comboGender.add( "" );
+				comboGender.add( "Male" );
+				comboGender.add( "Female" );
+				
+				Label labelCharacter = new Label (dialog, SWT.NONE);
+				labelCharacter.setText ("Character:");
+				labelCharacter.setLayoutData( "cell 0 4 1 1" );
+				
+				final Combo comboCharacter = new Combo( dialog, SWT.DROP_DOWN | SWT.BORDER);
+				comboCharacter.setLayoutData( "cell 1 4 2 1, growx, pushx" );
+				for ( int i = 0 ; i < 10 ; i++)
+					comboCharacter.add( String.valueOf( i ) );
+				
+				Button cancel = new Button (dialog, SWT.PUSH);
+				cancel.setText ("Cancel");
+				cancel.setLayoutData( "cell 1 5 1 1, growx, pushx, gaptop 10" );
+				cancel.addSelectionListener (new SelectionAdapter () {
+					public void widgetSelected (SelectionEvent e) {
+						System.out.println("User cancelled dialog");
+						dialog.close ();
+					}
+				});
+
+				Button ok = new Button (dialog, SWT.PUSH);
+				ok.setText ("OK");
+				ok.setLayoutData( "cell 2 5 1 1, growx, pushx, gaptop 10" );
+				ok.addSelectionListener (new SelectionAdapter () {
+					public void widgetSelected (SelectionEvent e) {
+						
+						int handedSelection = comboHanded.getSelectionIndex( );
+						String handed = "";
+						if ( handedSelection == 1 )
+							handed = "R";
+						else if ( handedSelection == 2 )
+							handed = "L";
+						
+						int genderSelection = comboGender.getSelectionIndex( );
+						String gender = "";
+						if ( handedSelection == 1 )
+							gender = "M";
+						else if ( handedSelection == 2 )
+							gender = "F";
+						
+						int characterSelection = comboCharacter.getSelectionIndex( );
+						String character = String.valueOf( characterSelection );
+						
+						upload( nameText.getText( ), ageText.getText( ), handed, gender, character );
+						
+						dialog.close ();
+					}
+				});
+				
+				dialog.setDefaultButton (ok);
+				dialog.pack ();
+				dialog.open ();
 			}
-		
 		});
 		
 		canvas.addMouseMoveListener( new MouseMoveListener( )
@@ -541,6 +637,11 @@ public class ClassificatonView extends ViewPart
 				histogramCanvas.redraw( 0, 0, r.width, r.height, true );
 			}
 		});
+	}
+	
+	protected void upload( String name, String age, String handed, String gender, String character )
+	{
+		System.out.printf( "%s %s %s %s %s%n", name, age, handed, gender, character );
 	}
 	
 	protected void classify( )
