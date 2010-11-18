@@ -1,6 +1,6 @@
 package edu.gmu.csi.view;
 
-import java.util.Map.Entry;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
@@ -14,14 +14,11 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.ViewPart;
-
-import edu.gmu.csi.model.Data;
-import edu.gmu.csi.model.data.CharacterData;
-import edu.gmu.csi.model.data.CharacterImageData;
 
 public class ClassificatonView extends ViewPart
 {
@@ -35,6 +32,7 @@ public class ClassificatonView extends ViewPart
 	protected Canvas canvas;
 	protected Image image;
 	protected boolean mouseDown = false;
+	private ReentrantLock imageLock;
 
 	public ClassificatonView( )
 	{
@@ -48,6 +46,8 @@ public class ClassificatonView extends ViewPart
 		palette = new PaletteData( colors );
 		
 		image = createBlankImage( );
+		
+		imageLock = new ReentrantLock( );
 	}
 	
 	private class CharacterImagePainter implements PaintListener
@@ -62,9 +62,17 @@ public class ClassificatonView extends ViewPart
 
 			GC gc = e.gc;
 			
-			gc.drawImage( image,
-					      0, 0, IMAGE_WIDTH, IMAGE_HEIGHT,
-					      0, 0, width, height );
+			imageLock.lock( );
+			try
+			{
+				gc.drawImage( image,
+					          0, 0, IMAGE_WIDTH, IMAGE_HEIGHT,
+					          0, 0, width, height );
+			}
+			finally
+			{
+				imageLock.unlock( );
+			}
 		}
 	
 	}
@@ -94,25 +102,59 @@ public class ClassificatonView extends ViewPart
 				
 				if ( mouseDown )
 				{
-					int imageX = e.x / IMAGE_WIDTH;
+					Rectangle r = canvas.getBounds( );
+					double stepX = r.width / (double) IMAGE_WIDTH;
+					double stepY = r.height / (double) IMAGE_HEIGHT;
+					
+					int imageX = (int) Math.floor( e.x / stepX );
 					if ( imageX < 0 ) imageX = 0;
 					if ( imageX >= IMAGE_WIDTH ) imageX = IMAGE_WIDTH - 1;
 					
-					int imageY = e.x / IMAGE_WIDTH;
+					int imageY = (int) Math.floor( e.y / stepY );
 					if ( imageY < 0 ) imageY = 0;
 					if ( imageY >= IMAGE_WIDTH ) imageY = IMAGE_WIDTH - 1;
+					
+					ImageData data = image.getImageData( );
+					boolean modified = false;
 					
 					// if shift is held down, delete
 					if ( ( e.stateMask & SWT.SHIFT ) != 0 )
 					{
-						image.getImageData( ).setPixel( imageX, imageY, 0 );
+						// this doesn't work for some reason, so do nothing
+						/*
+						if ( data.getPixel( imageX, imageY ) != 255 )
+						{
+							data.setPixel( imageX, imageY, 255 );
+							modified = true;
+						}
+						*/
 					}
 					else
 					{
-						image.getImageData( ).setPixel( imageX, imageY, 255 );
+						if ( data.getPixel( imageX, imageY ) != 0 )
+						{
+							data.setPixel( imageX, imageY, 0 );
+							modified = true;
+						}
 					}
 					
-					redrawCanvas( );
+					if ( modified )
+					{
+						imageLock.lock( );
+						try
+						{
+							image.dispose( );
+							
+							image = new Image( Display.getDefault( ), data );
+						
+						}
+						finally
+						{
+							imageLock.unlock( );
+						}
+						
+						redrawCanvas( );
+					}
 				}
 			}
 		});
