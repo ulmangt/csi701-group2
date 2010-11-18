@@ -1,5 +1,10 @@
 package edu.gmu.csi.view;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.miginfocom.swt.MigLayout;
@@ -21,7 +26,16 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.part.ViewPart;
+
+import edu.gmu.csi.manager.CharacterDataManager;
+import edu.gmu.csi.manager.DataManager;
+
+import edu.gmu.csi.model.Character;
+import edu.gmu.csi.model.Data;
+import edu.gmu.csi.model.data.CharacterData;
 
 public class ClassificatonView extends ViewPart
 {
@@ -29,6 +43,8 @@ public class ClassificatonView extends ViewPart
 	
 	public static final int IMAGE_HEIGHT = 28;
 	public static final int IMAGE_WIDTH = 28;
+	
+	public static final int SAMPLES_PER_CHARACTER = 100;
 	
 	protected CharacterImagePainter painter;
 	protected PaletteData palette;
@@ -103,6 +119,16 @@ public class ClassificatonView extends ViewPart
 		classify.setText( "Classify" );
 		classify.setLayoutData( "wrap" );
 		
+		classify.addListener( SWT.Selection, new Listener( )
+		{
+			@Override
+			public void handleEvent( Event event )
+			{
+				System.out.println( "clicked" );
+				classify( );
+			}
+		});
+		
 		canvas.addMouseMoveListener( new MouseMoveListener( )
 		{
 			@Override
@@ -129,13 +155,12 @@ public class ClassificatonView extends ViewPart
 					if ( ( e.stateMask & SWT.SHIFT ) != 0 )
 					{
 						// this doesn't work for some reason, so do nothing
-						/*
-						if ( data.getPixel( imageX, imageY ) != 255 )
+
+						if ( data.getPixel( imageX, imageY ) != -1 )
 						{
-							data.setPixel( imageX, imageY, 255 );
+							data.setPixel( imageX, imageY, -1 );
 							modified = true;
 						}
-						*/
 					}
 					else
 					{
@@ -204,6 +229,67 @@ public class ClassificatonView extends ViewPart
 				canvas.redraw( );
 			}
 		});
+	}
+	
+	protected void classify( )
+	{
+		int[] data = convertSignedToUnsigned( image.getImageData( ).data, 3 );
+		
+		System.out.println( data.length + " " + ( 28 * 28 ) + " " + Arrays.toString( data ) );
+		
+		DataManager dataManager = DataManager.getInstance( );
+		CharacterDataManager characterManager = CharacterDataManager.getInstance( );
+		
+		for ( int i = 0 ; i < 10 ; i++ )
+		{
+			Character character = dataManager.getCharacterData( String.valueOf( i ) );
+			
+			System.out.println( character );
+			
+			List<Data> dataList = new ArrayList<Data>( character.getDataList( ) );
+			//Collections.shuffle( dataList ); // for now don't randomize
+			List<Data> trainingSet = dataList.subList( 0, Math.min( dataList.size(), 1 ) );
+			
+			for ( Data trainingData : trainingSet )
+			{
+				CharacterData characterData;
+				
+				try
+				{
+					characterData = characterManager.getCharacterData( trainingData ).get( );
+					int[] trainingDataArray = convertSignedToUnsigned( characterData.getImageData( ) );
+					System.out.println( i + " " + trainingDataArray.length + " " + Arrays.toString( trainingDataArray ) );
+					
+				}
+				catch ( InterruptedException e )
+				{
+					e.printStackTrace();
+				}
+				catch ( ExecutionException e )
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	protected int[] convertSignedToUnsigned( byte[] data )
+	{
+		return convertSignedToUnsigned( data, 1 );
+	}
+	
+	protected int[] convertSignedToUnsigned( byte[] data, int downsample )
+	{
+		int[] converted = new int[ data.length / downsample ];
+		
+		int ci = 0;
+		for ( int i = 0 ; i < data.length ; i = i + downsample )
+		{
+			byte raw = data[i];
+			converted[ci++] = raw <= 127 ? raw : 256 - raw;
+		}
+		
+		return converted;
 	}
 
 }

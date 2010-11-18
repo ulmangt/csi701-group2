@@ -18,6 +18,8 @@ public class PopulateCharacterAndDataQuery
 {
 	private List<DataSet> parents;
 
+	private Map<String, Character> characters;
+	
 	public PopulateCharacterAndDataQuery( List<DataSet> parents )
 	{
 		this.parents = parents;
@@ -90,7 +92,7 @@ public class PopulateCharacterAndDataQuery
 	{
 		DataResultManager manager = DataResultManager.getInstance( );
 		
-		Map<String, Character> characters = new HashMap<String, Character>( );
+		characters = new HashMap<String, Character>( );
 
 		while ( resultSet.next( ) )
 		{
@@ -113,5 +115,10 @@ public class PopulateCharacterAndDataQuery
 		}
 
 		parent.addChildren( characters.values( ) );
+	}
+	
+	public Map<String, Character> getCharacters( )
+	{
+		return characters;
 	}
 }
