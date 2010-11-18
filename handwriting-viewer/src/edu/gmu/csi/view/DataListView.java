@@ -93,7 +93,7 @@ public class DataListView extends ViewPart
 	@Override
 	public void setFocus( )
 	{
-		// do nothing
+		treeViewer.getTree( ).setFocus( );
 	}
 
 	private class DataListLabelProvider extends LabelProvider

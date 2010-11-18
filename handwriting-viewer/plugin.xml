@@ -49,6 +49,13 @@
             name="Confusion Matrix View"
             restorable="true">
       </view>
+      <view
+            allowMultiple="false"
+            class="edu.gmu.csi.view.ClassificatonView"
+            id="handwriting-viewer.classificationview"
+            name="Data Input View"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
