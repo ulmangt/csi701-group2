@@ -1,8 +1,6 @@
 package edu.gmu.csi.view;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
@@ -263,6 +261,7 @@ public class ClassificatonView extends ViewPart
 	{
 		final int SAMPLES_PER_CHARACTER = 100;
 		final int NEAREST_SAMPLES = 50;
+		final int DATA_SET_ID = 1;
 		
 		int[] data = flipValues( convertSignedToUnsigned( image.getImageData( ).data, 3 ) );
 		
@@ -276,7 +275,7 @@ public class ClassificatonView extends ViewPart
 		
 		for ( int i = 0 ; i < 10 ; i++ )
 		{
-			Character character = dataManager.getCharacterData( String.valueOf( i ) );
+			Character character = dataManager.getCharacterData( DATA_SET_ID, String.valueOf( i ) );
 			
 			System.out.println( character );
 			

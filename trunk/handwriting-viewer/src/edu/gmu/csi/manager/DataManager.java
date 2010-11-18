@@ -10,26 +10,21 @@ public class DataManager
 {
 	private static final DataManager instance = new DataManager( );
 
-	private Map<String, Character> characterMap = Collections.synchronizedMap( new HashMap<String, Character>( ) );
+	private Map<Integer, Map<String,Character>> characterMap = Collections.synchronizedMap( new HashMap<Integer, Map<String,Character>>( ) );
 
 	public static DataManager getInstance( )
 	{
 		return instance;
 	}
 	
-	public void putAllCharacterData( Map<String,Character> map )
+	public void putDataSet( int ixDataSet, Map<String,Character> map )
 	{
-		characterMap.putAll( map );
+		characterMap.put( ixDataSet, map );
 	}
 	
-	public void putCharacterData( String character, Character characterData )
+	public Character getCharacterData( int ixDataSet, String character )
 	{
-		characterMap.put( character, characterData );
-	}
-	
-	public Character getCharacterData( String character )
-	{
-		return characterMap.get( character );
+		return characterMap.get( ixDataSet ).get( character );
 	}
 	
 }
