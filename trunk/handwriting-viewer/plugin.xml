@@ -22,24 +22,28 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            allowMultiple="false"
             class="edu.gmu.csi.view.DataListView"
             id="handwriting-viewer.datalistview"
             name="Data View"
             restorable="true">
       </view>
       <view
+            allowMultiple="false"
             class="edu.gmu.csi.view.CharacterImageView"
             id="handwriting-viewer.characterimageview"
             name="Image View"
             restorable="true">
       </view>
       <view
+            allowMultiple="false"
             class="edu.gmu.csi.view.RunListView"
             id="handwriting-viewer.runlistview"
             name="Run View"
             restorable="true">
       </view>
       <view
+            allowMultiple="false"
             class="edu.gmu.csi.view.ConfusionMatrixView"
             id="handwriting-viewer.confusionmatrixview"
             name="Confusion Matrix View"

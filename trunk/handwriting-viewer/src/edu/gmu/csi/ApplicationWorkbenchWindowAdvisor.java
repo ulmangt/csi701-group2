@@ -24,6 +24,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer( );
 		configurer.setInitialSize( new Point( 1200, 800 ) );
 		configurer.setShowCoolBar( false );
+		configurer.setShowFastViewBars( true );
 		configurer.setShowStatusLine( false );
 		configurer.setTitle( "Handwriting Analysis Tool" );
 	}
