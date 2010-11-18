@@ -9,6 +9,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import net.miginfocom.swt.MigLayout;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuCreator;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -25,9 +31,13 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.gmu.csi.manager.CharacterDataManager;
@@ -55,6 +65,8 @@ public class ClassificatonView extends ViewPart
 	protected boolean mouseDown = false;
 	protected ReentrantLock imageLock;
 	
+	protected int brushWidth = 1;
+	
 	protected int selectedCount = -1;
 	protected int maxCount;
 	protected List<List<Data>> countData;
@@ -62,6 +74,10 @@ public class ClassificatonView extends ViewPart
 	protected ReentrantLock resultLock;
 	
 
+	protected Action smallBrush;
+	protected Action medBrush;
+	protected Action largeBrush;
+	
 	public ClassificatonView( )
 	{
 		RGB[] colors = new RGB[256];
@@ -182,18 +198,18 @@ public class ClassificatonView extends ViewPart
 		parent.setLayout( new MigLayout( ) );
 		
 		canvas = new Canvas( parent, SWT.DOUBLE_BUFFERED | SWT.BORDER );
-		canvas.setLayoutData( "align center, growy 100, growx 100, pushy 100, pushx 100, wrap" );
+		canvas.setLayoutData( "cell 0 0 3 1, align center, growy 100, growx 100, pushy 100, pushx 100, wrap" );
 		painter = new CharacterImagePainter( );
 		canvas.addPaintListener( painter );
 		
 		histogramCanvas = new Canvas( parent, SWT.DOUBLE_BUFFERED | SWT.BORDER );
-		histogramCanvas.setLayoutData( "align center, growy 30, growx 100, pushy 30, pushx 100, wrap" );
+		histogramCanvas.setLayoutData( "cell 0 1 3 1, align center, growy 30, growx 100, pushy 30, pushx 100, wrap" );
 		histogramPainter = new HistogramPainter( );
 		histogramCanvas.addPaintListener( histogramPainter );
 		
 		Button classify = new Button( parent, SWT.PUSH );
 		classify.setText( "Classify" );
-		classify.setLayoutData( "wrap" );
+		classify.setLayoutData( "cell 0 2 1 1, pushx 100, growx 100" );
 		
 		classify.addListener( SWT.Selection, new Listener( )
 		{
@@ -205,12 +221,63 @@ public class ClassificatonView extends ViewPart
 			}
 		});
 		
+		Button clear = new Button( parent, SWT.PUSH );
+		clear.setText( "Clear" );
+		clear.setLayoutData( "cell 1 2 1 1, pushx 100, growx 100" );
+		
+		clear.addListener( SWT.Selection, new Listener( )
+		{
+			@Override
+			public void handleEvent( Event event )
+			{
+				ImageData data = image.getImageData( );
+				
+				for ( int dx = 0 ; dx < IMAGE_WIDTH ; dx++ )
+				{
+					for ( int dy = 0 ; dy < IMAGE_HEIGHT ; dy++ )
+					{
+						data.setPixel( dx, dy, -1 );
+					}
+				}
+				
+				imageLock.lock( );
+				try
+				{
+					image.dispose( );
+					
+					image = new Image( Display.getDefault( ), data );
+				
+				}
+				finally
+				{
+					imageLock.unlock( );
+				}
+				
+				redrawCanvas( );
+			}
+		});
+		
+		Button load = new Button( parent, SWT.PUSH );
+		load.setText( "Upload" );
+		load.setLayoutData( "cell 2 2 1 1, pushx 100, growx 100" );
+		
+		load.addListener( SWT.Selection, new Listener( )
+		{
+
+			@Override
+			public void handleEvent( Event event )
+			{
+				// TODO Auto-generated method stub
+				
+			}
+		
+		});
+		
 		canvas.addMouseMoveListener( new MouseMoveListener( )
 		{
 			@Override
 			public void mouseMove( MouseEvent e )
 			{
-				int brushWidth = 1;
 				
 				if ( mouseDown )
 				{
@@ -359,6 +426,89 @@ public class ClassificatonView extends ViewPart
 			{
 			}
 		});
+		
+		smallBrush = new Action( "Small Brush", IAction.AS_RADIO_BUTTON )
+		{
+			@Override
+			public void run( )
+			{
+				brushWidth = 0;
+			}
+		};
+		
+		medBrush = new Action( "Medium Brush", IAction.AS_RADIO_BUTTON )
+		{
+			@Override
+			public void run( )
+			{
+				brushWidth = 1;
+			}
+		};
+		
+		largeBrush = new Action( "Large Brush", IAction.AS_RADIO_BUTTON )
+		{
+			@Override
+			public void run( )
+			{
+				brushWidth = 2;
+			}
+		};
+		
+		IToolBarManager toolbarManager = getViewSite( ).getActionBars( ).getToolBarManager( );
+		
+		BrushSizeMenu menu = new BrushSizeMenu( );
+		toolbarManager.add( menu );
+		
+	}
+	
+	class BrushSizeMenu extends Action implements IMenuCreator
+	{
+		private Menu fMenu;
+		
+		public BrushSizeMenu( )
+		{
+			super( "Adjust Brush Size", IAction.AS_DROP_DOWN_MENU );
+
+			ImageDescriptor openImage = PlatformUI.getWorkbench( ).getSharedImages( ).getImageDescriptor( ISharedImages.IMG_DEF_VIEW );
+			setToolTipText( "Adjust Brush Size" );
+			setImageDescriptor( openImage );
+			setMenuCreator( this );
+		}
+		
+		@Override
+		public void dispose( )
+		{
+			// do nothing
+		}
+
+		@Override
+		public Menu getMenu( Control parent )
+		{
+			if ( fMenu != null )
+			{
+				fMenu.dispose( );
+			}
+
+			fMenu = new Menu( parent );
+
+			addActionToMenu( fMenu, smallBrush );
+			addActionToMenu( fMenu, medBrush );
+			addActionToMenu( fMenu, largeBrush );
+				
+			return fMenu;
+		}
+
+		@Override
+		public Menu getMenu( Menu parent )
+		{
+			return null;
+		}
+
+		private void addActionToMenu( Menu parent, Action action )
+		{
+			ActionContributionItem item = new ActionContributionItem( action );
+			item.fill( parent, -1 );
+		}
 	}
 
 	@Override
@@ -405,7 +555,7 @@ public class ClassificatonView extends ViewPart
 				
 				int[] data = flipValues( convertSignedToUnsigned( image.getImageData( ).data, 3 ) );
 				
-		//		System.out.println( data.length + " " + ( 28 * 28 ) + " " + Arrays.toString( data ) );
+//				System.out.println( data.length + " " + ( 28 * 28 ) + " " + Arrays.toString( data ) );
 				
 				DataManager dataManager = DataManager.getInstance( );
 				CharacterDataManager characterManager = CharacterDataManager.getInstance( );
@@ -431,7 +581,7 @@ public class ClassificatonView extends ViewPart
 						{
 							characterData = characterManager.getCharacterData( trainingData ).get( );
 							int[] trainingDataArray = convertSignedToUnsigned( characterData.getImageData( ) );
-		//					System.out.println( i + " " + trainingDataArray.length + " " + Arrays.toString( trainingDataArray ) );
+//							System.out.println( i + " " + trainingDataArray.length + " " + Arrays.toString( trainingDataArray ) );
 							double distance = calculateDistance( trainingDataArray, data );
 							
 							if ( closestCharacters.size( ) < NEAREST_SAMPLES )
