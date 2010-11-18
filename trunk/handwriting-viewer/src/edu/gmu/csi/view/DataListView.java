@@ -79,8 +79,8 @@ public class DataListView extends ViewPart
 
 		PopulateDataListViewJob job = new PopulateDataListViewJob( this );
 
-//		siteService.showInDialog( site.getShell( ), job );
-//		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
+		siteService.showInDialog( site.getShell( ), job );
+		siteService.schedule( job, 0 /* now */, true /* use the half-busy cursor in the part */);
 	}
 
 	public void setRoot( SourceRoot root )

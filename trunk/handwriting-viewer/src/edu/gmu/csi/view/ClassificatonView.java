@@ -52,7 +52,12 @@ public class ClassificatonView extends ViewPart
 	protected Canvas histogramCanvas;
 	protected Image image;
 	protected boolean mouseDown = false;
-	private ReentrantLock imageLock;
+	protected ReentrantLock imageLock;
+	
+	protected int maxCount;
+	protected int[] counts = new int[10];
+	protected ReentrantLock resultLock;
+	
 
 	public ClassificatonView( )
 	{
@@ -68,6 +73,7 @@ public class ClassificatonView extends ViewPart
 		image = createBlankImage( );
 		
 		imageLock = new ReentrantLock( );
+		resultLock = new ReentrantLock( );
 	}
 	
 	private class HistogramPainter implements PaintListener
@@ -94,9 +100,32 @@ public class ClassificatonView extends ViewPart
 				if ( p.x > widthStep || p.y > legendHeight )
 					s = "";
 				
+				int barWidth = x == 9 ? widthStep-2 : widthStep;
+				
 				gc.drawString( s, (int) (x * widthStep + widthStep / 2.0 - p.x / 2.0), (int) ( height - legendHeight / 2 - p.y / 2.0 )  );
 				
-				gc.drawRectangle( x * widthStep, height - legendHeight, x == 9 ? widthStep-2 : widthStep, legendHeight-4 );
+				gc.drawRectangle( x * widthStep, height - legendHeight, barWidth, legendHeight-4 );
+			}
+			
+			gc.setBackground( Display.getDefault( ).getSystemColor(SWT.COLOR_BLACK ) );
+			
+			resultLock.lock( );
+			try
+			{
+				for ( int x = 0 ; x < rows ; x++ )
+				{
+					int barWidth = x == 9 ? widthStep-2 : widthStep;
+					
+					int count = counts[x];
+					double fraction = maxCount == 0 ? 0.0 : count / (double) maxCount;
+					int barHeight = (int) ( fraction * ( height - legendHeight ) );
+					
+					gc.fillRectangle( x * widthStep, height - barHeight - legendHeight, barWidth, barHeight );
+				}
+			}
+			finally
+			{
+				resultLock.unlock( );
 			}
 		}
 	}
@@ -291,96 +320,125 @@ public class ClassificatonView extends ViewPart
 			@Override
 			public void run( )
 			{
-				canvas.redraw( );
+				Rectangle r = canvas.getBounds( );
+				canvas.redraw( 0, 0, r.width, r.height, true );
 			}
 		});
 	}
 	
-	protected int classify( )
+	protected void redrawHistogramCanvas( )
 	{
-		final int SAMPLES_PER_CHARACTER = 100;
-		final int NEAREST_SAMPLES = 50;
-		final int DATA_SET_ID = 1;
-		
-		int[] data = flipValues( convertSignedToUnsigned( image.getImageData( ).data, 3 ) );
-		
-//		System.out.println( data.length + " " + ( 28 * 28 ) + " " + Arrays.toString( data ) );
-		
-		DataManager dataManager = DataManager.getInstance( );
-		CharacterDataManager characterManager = CharacterDataManager.getInstance( );
-		
-		NavigableSet<CharacterDistance> closestCharacters = new TreeSet<CharacterDistance>( );
-		double largestDistance = 0;
-		
-		for ( int i = 0 ; i < 10 ; i++ )
+		Display.getDefault( ).asyncExec( new Runnable( )
 		{
-			Character character = dataManager.getCharacterData( DATA_SET_ID, String.valueOf( i ) );
-			
-			System.out.println( character );
-			
-			List<Data> dataList = new ArrayList<Data>( character.getDataList( ) );
-			//Collections.shuffle( dataList ); // for now don't randomize
-			List<Data> trainingSet = dataList.subList( 0, Math.min( dataList.size(), SAMPLES_PER_CHARACTER ) );
-			
-			for ( Data trainingData : trainingSet )
+			@Override
+			public void run( )
 			{
-				CharacterData characterData;
+				Rectangle r = histogramCanvas.getBounds( );
+				histogramCanvas.redraw( 0, 0, r.width, r.height, true );
+			}
+		});
+	}
+	
+	protected void classify( )
+	{
+		(new Thread( )
+		{
+			public void run( )
+			{
+				final int SAMPLES_PER_CHARACTER = 100;
+				final int NEAREST_SAMPLES = 50;
+				final int DATA_SET_ID = 1;
 				
-				try
+				int[] data = flipValues( convertSignedToUnsigned( image.getImageData( ).data, 3 ) );
+				
+		//		System.out.println( data.length + " " + ( 28 * 28 ) + " " + Arrays.toString( data ) );
+				
+				DataManager dataManager = DataManager.getInstance( );
+				CharacterDataManager characterManager = CharacterDataManager.getInstance( );
+				
+				NavigableSet<CharacterDistance> closestCharacters = new TreeSet<CharacterDistance>( );
+				double largestDistance = 0;
+				
+				for ( int i = 0 ; i < 10 ; i++ )
 				{
-					characterData = characterManager.getCharacterData( trainingData ).get( );
-					int[] trainingDataArray = convertSignedToUnsigned( characterData.getImageData( ) );
-//					System.out.println( i + " " + trainingDataArray.length + " " + Arrays.toString( trainingDataArray ) );
-					double distance = calculateDistance( trainingDataArray, data );
+					Character character = dataManager.getCharacterData( DATA_SET_ID, String.valueOf( i ) );
 					
-					if ( closestCharacters.size( ) < NEAREST_SAMPLES )
+					System.out.println( character );
+					
+					List<Data> dataList = new ArrayList<Data>( character.getDataList( ) );
+					//Collections.shuffle( dataList ); // for now don't randomize
+					List<Data> trainingSet = dataList.subList( 0, Math.min( dataList.size(), SAMPLES_PER_CHARACTER ) );
+					
+					for ( Data trainingData : trainingSet )
 					{
-						closestCharacters.add( new CharacterDistance( character, distance ) );
-						if ( distance > largestDistance )
-							largestDistance = distance;
-					}
-					else
-					{
-						if ( distance < largestDistance )
+						CharacterData characterData;
+						
+						try
 						{
-							closestCharacters.pollLast( );
-							closestCharacters.add( new CharacterDistance( character, distance ) );
-							largestDistance = closestCharacters.last( ).getDistance( );
+							characterData = characterManager.getCharacterData( trainingData ).get( );
+							int[] trainingDataArray = convertSignedToUnsigned( characterData.getImageData( ) );
+		//					System.out.println( i + " " + trainingDataArray.length + " " + Arrays.toString( trainingDataArray ) );
+							double distance = calculateDistance( trainingDataArray, data );
+							
+							if ( closestCharacters.size( ) < NEAREST_SAMPLES )
+							{
+								closestCharacters.add( new CharacterDistance( character, distance ) );
+								if ( distance > largestDistance )
+									largestDistance = distance;
+							}
+							else
+							{
+								if ( distance < largestDistance )
+								{
+									closestCharacters.pollLast( );
+									closestCharacters.add( new CharacterDistance( character, distance ) );
+									largestDistance = closestCharacters.last( ).getDistance( );
+								}
+							}
+						}
+						catch ( InterruptedException e )
+						{
+							e.printStackTrace();
+						}
+						catch ( ExecutionException e )
+						{
+							e.printStackTrace();
 						}
 					}
 				}
-				catch ( InterruptedException e )
+				
+				int[] countsArray = new int[10];
+				
+				for ( CharacterDistance character : closestCharacters )
 				{
-					e.printStackTrace();
+					int index = Integer.parseInt( character.getCharacter( ).getCharacter( ) );
+					countsArray[index]++;
 				}
-				catch ( ExecutionException e )
+				
+				int highestIndex = 0;
+				int highestCount = 0;
+				for ( int i = 0 ; i < 10 ; i++ )
 				{
-					e.printStackTrace();
+					int count = countsArray[i];
+					if ( count > highestCount )
+					{
+						highestCount = count;
+						highestIndex = i;
+					}
+				}
+				
+				resultLock.lock( );
+				try
+				{
+					maxCount = highestCount;
+					counts = countsArray;
+				}
+				finally
+				{
+					resultLock.unlock( );
 				}
 			}
-		}
-		
-		int[] counts = new int[10];
-		
-		for ( CharacterDistance character : closestCharacters )
-		{
-			int index = Integer.parseInt( character.getCharacter( ).getCharacter( ) );
-			counts[index]++;
-		}
-		
-		int highestIndex = 0;
-		int highestCount = 0;
-		for ( int i = 0 ; i < 10 ; i++ )
-		{
-			int count = counts[i];
-			if ( count > highestCount )
-			{
-				highestCount = count;
-				highestIndex = i;
-			}
-		}
-		
-		return highestIndex;
+		}).start( );
 	}
 	
 	protected int[] convertSignedToUnsigned( byte[] data )
