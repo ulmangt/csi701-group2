@@ -1,7 +1,10 @@
 package edu.gmu.csi.view;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
@@ -30,9 +33,6 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
@@ -49,6 +49,8 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.gmu.csi.database.UploadDataQuery;
+import edu.gmu.csi.database.UploadMetadataQuery;
 import edu.gmu.csi.manager.CharacterDataManager;
 import edu.gmu.csi.manager.DataManager;
 import edu.gmu.csi.manager.ViewUtil;
@@ -63,6 +65,8 @@ public class ClassificatonView extends ViewPart
 	
 	public static final int IMAGE_HEIGHT = 28;
 	public static final int IMAGE_WIDTH = 28;
+	
+	public static final int MANUALLY_UPLOADED_DATA_SET = 3;
 		
 	protected CharacterImagePainter painter;
 	protected HistogramPainter histogramPainter;
@@ -349,9 +353,9 @@ public class ClassificatonView extends ViewPart
 						
 						int genderSelection = comboGender.getSelectionIndex( );
 						String gender = "";
-						if ( handedSelection == 1 )
+						if ( genderSelection == 1 )
 							gender = "M";
-						else if ( handedSelection == 2 )
+						else if ( genderSelection == 2 )
 							gender = "F";
 						
 						int characterSelection = comboCharacter.getSelectionIndex( );
@@ -641,7 +645,49 @@ public class ClassificatonView extends ViewPart
 	
 	protected void upload( String name, String age, String handed, String gender, String character )
 	{
-		System.out.printf( "%s %s %s %s %s%n", name, age, handed, gender, character );
+		System.out.printf( "Uploading: %s %s %s %s %s%n", name, age, handed, gender, character );
+		
+		byte[] dataArray;
+		
+		imageLock.lock( );
+		try
+		{
+			ImageData data = image.getImageData( );
+			dataArray = convertUnsignedToSigned( flipValues( convertSignedToUnsigned( image.getImageData( ).data, 3 ) ) );
+		
+		}
+		finally
+		{
+			imageLock.unlock( );
+		}
+		
+		System.out.println( Arrays.toString( dataArray ) );
+		
+		UploadDataQuery uploadData = new UploadDataQuery( MANUALLY_UPLOADED_DATA_SET, character, IMAGE_WIDTH, IMAGE_HEIGHT, dataArray );
+		uploadData.runQuery( );
+		int ixData = uploadData.getDataId( );
+		
+		Map<String,String> metadata = new HashMap<String,String>( );
+		
+		if ( !gender.isEmpty( ) )
+			metadata.put( "Gender", gender );
+		
+		if ( !handed.isEmpty( ) )
+			metadata.put( "Handedness", handed );
+		
+		try
+		{
+			int ageInt = Integer.parseInt( age );
+			metadata.put( "Age", String.valueOf( ageInt ) );
+		}
+		catch ( NumberFormatException e ) { }
+		
+		if ( !name.isEmpty( ) )
+			metadata.put( "Name", name );
+		
+		UploadMetadataQuery metadataQuery = new UploadMetadataQuery( ixData, metadata );
+		metadataQuery.runQuery( );
+		
 	}
 	
 	protected void classify( )
@@ -769,6 +815,19 @@ public class ClassificatonView extends ViewPart
 		{
 			byte raw = data[i];
 			converted[ci++] = raw < 0 ? 256 + raw : raw;
+		}
+		
+		return converted;
+	}
+	
+	protected byte[] convertUnsignedToSigned( int[] data )
+	{
+		byte[] converted = new byte[ data.length ];
+		
+		for ( int i = 0 ; i < data.length ; i++ )
+		{
+			int unsigned = data[i];
+			converted[i] = unsigned <= 127 ? (byte) unsigned : (byte) (unsigned - 256);
 		}
 		
 		return converted;
