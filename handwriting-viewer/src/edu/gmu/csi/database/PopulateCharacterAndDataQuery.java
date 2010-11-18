@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.gmu.csi.manager.DataManager;
 import edu.gmu.csi.manager.DataResultManager;
 import edu.gmu.csi.manager.DatabaseManager;
 import edu.gmu.csi.model.Character;
@@ -17,8 +18,6 @@ import edu.gmu.csi.model.DataSet;
 public class PopulateCharacterAndDataQuery
 {
 	private List<DataSet> parents;
-
-	private Map<String, Character> characters;
 	
 	public PopulateCharacterAndDataQuery( List<DataSet> parents )
 	{
@@ -92,7 +91,7 @@ public class PopulateCharacterAndDataQuery
 	{
 		DataResultManager manager = DataResultManager.getInstance( );
 		
-		characters = new HashMap<String, Character>( );
+		Map<String, Character> characters = new HashMap<String, Character>( );
 
 		while ( resultSet.next( ) )
 		{
@@ -115,10 +114,7 @@ public class PopulateCharacterAndDataQuery
 		}
 
 		parent.addChildren( characters.values( ) );
-	}
-	
-	public Map<String, Character> getCharacters( )
-	{
-		return characters;
+		
+		DataManager.getInstance( ).putDataSet( parent.getId( ), characters );
 	}
 }
