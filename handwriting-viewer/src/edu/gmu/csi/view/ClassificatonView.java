@@ -286,7 +286,7 @@ public class ClassificatonView extends ViewPart
 		for ( int i = 0 ; i < data.length ; i = i + downsample )
 		{
 			byte raw = data[i];
-			converted[ci++] = raw <= 127 ? raw : 256 - raw;
+			converted[ci++] = raw < 0 ? 256 + raw : raw;
 		}
 		
 		return converted;
