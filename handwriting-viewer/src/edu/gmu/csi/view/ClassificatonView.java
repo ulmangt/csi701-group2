@@ -2,6 +2,8 @@ package edu.gmu.csi.view;
 
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.miginfocom.swt.MigLayout;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -15,6 +17,7 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -89,17 +92,22 @@ public class ClassificatonView extends ViewPart
 	@Override
 	public void createPartControl( Composite parent )
 	{
+		parent.setLayout( new MigLayout( ) );
+		
 		canvas = new Canvas( parent, SWT.DOUBLE_BUFFERED );
+		canvas.setLayoutData( "align center, grow, push, wrap" );
 		painter = new CharacterImagePainter( );
 		canvas.addPaintListener( painter );
+		
+		Button classify = new Button( parent, SWT.PUSH );
+		classify.setText( "Classify" );
+		classify.setLayoutData( "wrap" );
 		
 		canvas.addMouseMoveListener( new MouseMoveListener( )
 		{
 			@Override
 			public void mouseMove( MouseEvent e )
 			{
-				System.out.println( mouseDown );
-				
 				if ( mouseDown )
 				{
 					Rectangle r = canvas.getBounds( );
@@ -170,16 +178,12 @@ public class ClassificatonView extends ViewPart
 			public void mouseDown( MouseEvent e )
 			{
 				mouseDown = true;
-				
-				System.out.println( mouseDown );
 			}
 
 			@Override
 			public void mouseUp( MouseEvent e )
 			{
 				mouseDown = false;
-				
-				System.out.println( mouseDown );
 			}
 		});
 	}
