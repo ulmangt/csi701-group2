@@ -158,3 +158,35 @@
   (with-connection db
     (let [rs (get-db-data ixData)]  
       (doall (map #(println % (Arrays/toString (signed-to-unsigned-array (:bdata %)))) rs)))))
+
+(def scanned-offsets
+{ 0 165392
+  1 165697
+  2 166002
+  3 166307
+  4 166612
+  5 166917
+  6 167222
+  7 167527
+  8 167832
+  9 168137 })
+
+(def metadata-keys (list "Age" "Gender" "Handedness" "Quality"))
+
+(defn populate-metadata
+  ([file-name offset-map key-seq]
+    (let [in (get-reader-txt file-name)
+          lines (line-seq in)
+          data (map #(apply hash-map (interleave key-seq (split #"[ ]+" %))) lines)
+          row (map (fn [data-map data-idx]
+                       (map (fn [[data-key data-value]]
+                                (map (fn [[_ offset] char-idx] (hash-map :ixdata (+ data-idx char-idx offset) :skey data-key :svalue data-value))
+                                     scanned-offsets
+                                     (range 0 10)))
+                            data-map))
+                   data
+                   (range 0 (count data)))]
+      (apply insert-records "Handwriting.Metadata" (flatten row))))
+  ([file-name]
+    (populate-metadata file-name scanned-offsets metadata-keys)))
+
