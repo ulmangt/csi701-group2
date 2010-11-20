@@ -40,6 +40,9 @@ public class PopulateDataListViewJob extends Job
 		PopulateCharacterAndDataQuery populateDataQuery = new PopulateCharacterAndDataQuery( dataSetList );
 		populateDataQuery.runQuery( );
 		
+		PopulateMetadataQuery populateMetadataQuery = new PopulateMetadataQuery( );
+		populateMetadataQuery.runQuery( );
+		
 		Display.getDefault( ).asyncExec( new Runnable( )
 		{
 			public void run( )
