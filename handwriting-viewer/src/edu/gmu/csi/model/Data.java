@@ -1,5 +1,9 @@
 package edu.gmu.csi.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public class Data implements TreeNode
 {
 	private int ixData;
@@ -7,6 +11,8 @@ public class Data implements TreeNode
 	private String sCharacter;
 	private int iRows;
 	private int iCols;
+	
+	private List<Metadata> metadata;
 
 	public Data( int ixData, Character character, String sCharacter, int iRows, int iCols )
 	{
@@ -16,6 +22,23 @@ public class Data implements TreeNode
 		this.iRows = iRows;
 		this.iCols = iCols;
 	}
+	
+	public void addChildren( Collection<Metadata> metadata )
+	{
+		if ( this.metadata == null )
+			this.metadata = new ArrayList<Metadata>( );
+		
+		this.metadata.addAll( metadata );
+	}
+
+	public void addChild( Metadata metadata )
+	{
+		if ( this.metadata == null )
+			this.metadata = new ArrayList<Metadata>( );
+	
+		this.metadata.add( metadata );
+	}
+
 
 	public int getId( )
 	{
@@ -52,12 +75,15 @@ public class Data implements TreeNode
 	@Override
 	public Object[] getChildren( )
 	{
-		return null;
+		if ( metadata == null )
+			return null;
+		else
+			return metadata.toArray( );
 	}
 
 	@Override
 	public boolean hasChildren( )
 	{
-		return false;
+		return metadata != null && !metadata.isEmpty( );
 	}
 }
