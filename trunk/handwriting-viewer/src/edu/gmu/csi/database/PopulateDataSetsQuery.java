@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import edu.gmu.csi.manager.DataManager;
 import edu.gmu.csi.manager.DatabaseManager;
 import edu.gmu.csi.model.DataSet;
 import edu.gmu.csi.model.Source;
@@ -97,7 +98,10 @@ public class PopulateDataSetsQuery
 			String sUrl = resultSet.getString( "sUrl" );
 			Date dtAccessTime = resultSet.getDate( "dtAccessTime" );
 
-			result.add( new DataSet( ixDataSet, parent, sDescription, sUrl, dtAccessTime ) );
+			DataSet dataSet = new DataSet( ixDataSet, parent, sDescription, sUrl, dtAccessTime );
+			
+			result.add( dataSet );
+			DataManager.getInstance( ).putDataSet( dataSet );
 		}
 
 		parent.addChildren( result );

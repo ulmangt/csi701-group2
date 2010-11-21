@@ -11,6 +11,7 @@ import org.eclipse.ui.PlatformUI;
 
 import edu.gmu.csi.view.CharacterImageView;
 import edu.gmu.csi.view.ConfusionMatrixView;
+import edu.gmu.csi.view.DataListView;
 
 public class ViewUtil
 {
@@ -56,6 +57,30 @@ public class ViewUtil
 			if ( CharacterImageView.ID.equals( viewRef.getId( ) ) )
 			{
 				return ( CharacterImageView ) viewRef.getView( false );
+			}
+		}
+
+		return null;
+	}
+	
+	public static DataListView getDataListView( )
+	{
+		IWorkbench workbench = PlatformUI.getWorkbench( );
+		if ( workbench == null ) return null;
+
+		IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow( );
+		if ( workbenchWindow == null ) return null;
+
+		IWorkbenchPage workbenchPage = workbenchWindow.getActivePage( );
+		if ( workbenchPage == null ) return null;
+
+		List<IViewReference> viewRefList = Arrays.asList( workbenchPage.getViewReferences( ) );
+
+		for ( IViewReference viewRef : viewRefList )
+		{
+			if ( DataListView.ID.equals( viewRef.getId( ) ) )
+			{
+				return ( DataListView ) viewRef.getView( false );
 			}
 		}
 
