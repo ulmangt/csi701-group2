@@ -180,9 +180,8 @@
           data (map #(apply hash-map (interleave key-seq (split #"[ ]+" %))) lines)
           row (map (fn [data-map data-idx]
                        (map (fn [[data-key data-value]]
-                                (map (fn [[_ offset] char-idx] (hash-map :ixdata (+ data-idx char-idx offset) :skey data-key :svalue data-value))
-                                     scanned-offsets
-                                     (range 0 10)))
+                                (map (fn [[_ offset]] (hash-map :ixdata (+ data-idx offset) :skey data-key :svalue data-value))
+                                     scanned-offsets))
                             data-map))
                    data
                    (range 0 (count data)))]
