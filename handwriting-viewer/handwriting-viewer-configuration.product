@@ -12,7 +12,6 @@
 
    <windowImages/>
 
-
    <launcher name="HandwritingViewer">
       <solaris/>
       <win useIco="false">

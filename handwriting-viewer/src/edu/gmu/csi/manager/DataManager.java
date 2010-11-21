@@ -1,9 +1,12 @@
 package edu.gmu.csi.manager;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import edu.gmu.csi.model.Character;
 import edu.gmu.csi.model.Data;
@@ -13,6 +16,7 @@ public class DataManager
 {
 	private static final DataManager instance = new DataManager( );
 
+	private Set<String> metadataKeys = Collections.synchronizedSet( new HashSet<String>( ) );
 	private Map<Integer, DataSet> dataSetMap = Collections.synchronizedMap( new HashMap<Integer, DataSet>( ) );
 	private Map<Integer, Data> dataMap = Collections.synchronizedMap( new HashMap<Integer, Data>( ) );
 	private Map<Integer, Map<String,Character>> characterMap = Collections.synchronizedMap( new HashMap<Integer, Map<String,Character>>( ) );
@@ -20,6 +24,11 @@ public class DataManager
 	public static DataManager getInstance( )
 	{
 		return instance;
+	}
+	
+	public void putMetadataKey( String key )
+	{
+		metadataKeys.add( key );
 	}
 	
 	public void putDataSet( DataSet data )
@@ -72,4 +81,8 @@ public class DataManager
 		return characterMap.get( ixDataSet ).get( character );
 	}
 	
+	public Collection<String> getMetadataKeys( )
+	{
+		return Collections.unmodifiableCollection( metadataKeys );
+	}
 }

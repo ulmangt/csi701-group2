@@ -3,6 +3,7 @@ package edu.gmu.csi.view;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,12 +13,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -26,13 +30,18 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.gmu.csi.manager.CharacterDataManager;
+import edu.gmu.csi.manager.DataManager;
+import edu.gmu.csi.manager.MetadataColorManager;
 import edu.gmu.csi.model.Data;
+import edu.gmu.csi.model.Metadata;
 import edu.gmu.csi.model.data.CharacterData;
 import edu.gmu.csi.model.data.CharacterImageData;
 
@@ -48,6 +57,8 @@ public class CharacterImageView extends ViewPart
 	private Map<Data,WeakReference<CharacterImageData>> loadedImages;
 	
 	private ReferenceQueue<CharacterImageData> referenceQueue;
+	
+	private String selectedMetadata;
 	
 	private ReentrantLock selectionLock;
 	private List<CharacterImageData> newLoadedImages;
@@ -181,10 +192,20 @@ public class CharacterImageView extends ViewPart
 			double widthStep = width / columns;
 			double heightStep = height / rows;
 			
+			MetadataColorManager colorManager = MetadataColorManager.getInstance( );
+			
 			for ( Entry<Data,Integer> dataEntry : dataIndex.entrySet( ) )
 			{
 				Data data = dataEntry.getKey( );
 				Integer index = dataEntry.getValue( );
+				
+				Metadata metadata = data.getMetadata( selectedMetadata );
+				Color color = null;
+				
+				if ( metadata != null )
+				{
+					color = colorManager.getColor( metadata.getKey( ), metadata.getValue( ) );
+				}
 				
 				CharacterImageData image = imageIndex.get( index );
 				
@@ -196,9 +217,17 @@ public class CharacterImageView extends ViewPart
 				
 				if ( image != null )
 				{
+					gc.setAlpha( 255 );
 					gc.drawImage( image.getImage( ),
 							      0, 0, image.getImageColumns( ), image.getImageRows( ),
 							      posX, posY, (int) widthStep, (int) heightStep );
+					
+					if ( color != null )
+					{
+						gc.setBackground( color );
+						gc.setAlpha( 100 );
+						gc.fillRectangle( posX, posY, (int) widthStep, (int) heightStep );
+					}
 				}
 				
 				if ( showIds )
@@ -213,6 +242,7 @@ public class CharacterImageView extends ViewPart
 	{
 		Display display = Display.getDefault( );
 		ImageData sourceData = new ImageData( data.getImageColumns( ), data.getImageRows( ), 8, palette, 1, data.getImageData( ) );
+		//sourceData.alpha = 150;
 		return new CharacterImageData( data, new Image( display, sourceData ) );
 	}
 	
@@ -329,6 +359,13 @@ public class CharacterImageView extends ViewPart
 		}).start( );
 	}
 	
+	protected void selectMetadata( String key )
+	{
+		selectedMetadata = key;
+		
+		redrawCanvas( );
+	}
+	
 	protected void redrawCanvas( )
 	{
 		Display.getDefault( ).asyncExec( new Runnable( )
@@ -373,6 +410,76 @@ public class CharacterImageView extends ViewPart
 				redrawCanvas( );
 			}
 		});
+		
+		toolbarManager.add( new ColorByMetadataMenu( ) );
+	}
+	
+	class ColorByMetadataMenu extends Action implements IMenuCreator
+	{
+		private Menu fMenu;
+		
+		public ColorByMetadataMenu( )
+		{
+			super( "Color By Metadata", IAction.AS_DROP_DOWN_MENU );
+
+			ImageDescriptor openImage = PlatformUI.getWorkbench( ).getSharedImages( ).getImageDescriptor( ISharedImages.IMG_DEF_VIEW );
+			setToolTipText( "Color By Metadata" );
+			setImageDescriptor( openImage );
+			setMenuCreator( this );
+		}
+		
+		@Override
+		public void dispose( )
+		{
+			// do nothing
+		}
+
+		@Override
+		public Menu getMenu( Control parent )
+		{
+			if ( fMenu != null )
+			{
+				fMenu.dispose( );
+			}
+
+			fMenu = new Menu( parent );
+			
+			DataManager manager = DataManager.getInstance( );
+			Collection<String> keys = manager.getMetadataKeys( );
+
+			for ( final String key : keys )
+			{
+				Action action = new Action( key, IAction.AS_RADIO_BUTTON )
+				{
+					@Override
+					public void run( )
+					{
+						selectMetadata( key );
+					}
+				};
+				
+				if ( key.equals( selectedMetadata ) )
+				{
+					action.setChecked( true );
+				}
+				
+				addActionToMenu( fMenu, action );
+			}
+				
+			return fMenu;
+		}
+
+		@Override
+		public Menu getMenu( Menu parent )
+		{
+			return null;
+		}
+
+		private void addActionToMenu( Menu parent, Action action )
+		{
+			ActionContributionItem item = new ActionContributionItem( action );
+			item.fill( parent, -1 );
+		}
 	}
 
 	@Override

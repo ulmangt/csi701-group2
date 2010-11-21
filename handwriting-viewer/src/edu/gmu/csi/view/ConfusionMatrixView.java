@@ -1,6 +1,8 @@
 package edu.gmu.csi.view;
 
 import java.util.List;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.swt.SWT;
@@ -33,6 +35,9 @@ public class ConfusionMatrixView extends ViewPart
 	private volatile boolean matrixUpdated;
 	private Point newSelection;
 	private Point selection;
+	
+	private ColorChooser colorChooser;
+	
 	private ConfusionMatrix newConfusionMatrix;
 	private ConfusionMatrix confusionMatrix;
 	
@@ -64,12 +69,17 @@ public class ConfusionMatrixView extends ViewPart
 			public void paintControl( PaintEvent e )
 			{
 				if ( matrixUpdated )
-				{
+				{					
 					lock.lock( );
 					try
 					{
+						
+						if ( colorChooser != null )
+							colorChooser.dispose( );
+						
 						selection = newSelection;
 						confusionMatrix = newConfusionMatrix;
+						colorChooser = new ColorChooser( 0, newConfusionMatrix.getMaxOffDiagonalCount( ), 200 );
 						matrixUpdated = false;
 					}
 					finally
@@ -89,6 +99,8 @@ public class ConfusionMatrixView extends ViewPart
 				float widthStep = (float) width / (float) rows;
 				float heightStep = (float) height / (float) cols;
 			
+				Color bg = gc.getBackground( );
+				
 				gc.setForeground( color );
 				gc.setLineWidth( 2 );
 				
@@ -119,7 +131,22 @@ public class ConfusionMatrixView extends ViewPart
 				for ( int x = 2 ; x < rows ; x++ )
 				{
 					for ( int y = 2 ; y < cols ; y++ )
-					{
+					{	
+						if ( confusionMatrix != null )
+						{
+							List<Data> dataList = confusionMatrix.get( x-2, y-2 );
+							int size = dataList == null ? 0 : dataList.size( );
+							Color color = colorChooser.getColor( size );
+							
+							if ( color != null )
+							{
+								gc.setBackground( color );
+								gc.setAlpha( 100 );
+								gc.fillRectangle( (int) (x * widthStep), (int) (y * heightStep), (int) widthStep, (int) heightStep );
+							}
+						}
+						
+						gc.setAlpha( 255 );
 						gc.setForeground( colorForeground );
 						gc.drawRectangle( (int) (x * widthStep), (int) (y * heightStep), (int) widthStep, (int) heightStep );
 					}
@@ -130,6 +157,8 @@ public class ConfusionMatrixView extends ViewPart
 					gc.setForeground( colorRed );
 					gc.drawRectangle( (int) ( (selection.x + 2) * widthStep), (int) ( (selection.y + 2) * heightStep), (int) widthStep, (int) heightStep );
 				}
+				
+				gc.setBackground( bg );
 				
 				if ( confusionMatrix != null )
 				{
@@ -219,25 +248,29 @@ public class ConfusionMatrixView extends ViewPart
 		canvas.setFocus( );
 	}
 	
-	public void setConfusionMatrix( List<Result> results )
+	public void setConfusionMatrix( final List<Result> results )
 	{
-		this.lock.lock( );
+		lock.lock( );
 		try
 		{
 			if ( results == null )
 			{
-				this.newConfusionMatrix = null;
+				newConfusionMatrix = null;
 			}
 			else
 			{
-				this.newConfusionMatrix = new ConfusionMatrix( results );
+				newConfusionMatrix = new ConfusionMatrix( results );
 			}
 			
-			this.matrixUpdated = true;
+			matrixUpdated = true;
+		}
+		catch ( Exception e )
+		{
+			e.printStackTrace( );
 		}
 		finally
 		{
-			this.lock.unlock( );
+			lock.unlock( );
 		}
 		
 		redrawCanvas( );
@@ -245,7 +278,7 @@ public class ConfusionMatrixView extends ViewPart
 	
 	protected void redrawCanvas( )
 	{
-		Display.getDefault( ).syncExec( new Runnable( )
+		Display.getDefault( ).asyncExec( new Runnable( )
 		{
 			@Override
 			public void run( )
@@ -254,5 +287,120 @@ public class ConfusionMatrixView extends ViewPart
 				canvas.redraw( 0, 0, r.width, r.height, true );
 			}
 		});
+	}
+	
+	private class ColorChooser
+	{
+		private class ValueColor implements Comparable<ValueColor>
+		{
+			public float minVal;
+			public Color color;
+			
+			public ValueColor( float minVal, Color color )
+			{
+				this.minVal = minVal;
+				this.color = color;
+			}
+
+			@Override
+			public int compareTo( ValueColor o )
+			{
+				if ( minVal < o.minVal )
+					return -1;
+				else if ( minVal > o.minVal )
+					return 1;
+				else
+					return 0;
+			}
+		}
+		
+		private NavigableSet<ValueColor> colors;
+		
+		public ColorChooser( float min, float max, int steps )
+		{
+			Display display = Display.getDefault( );
+			
+			this.colors = new TreeSet<ValueColor>( );
+			
+			float[] temp = new float[4];
+			float step = ( max - min ) / steps;
+			for ( float current = min ; current <= max ; current += step )
+			{
+				toColor( ( current - min )  / ( max - min ), temp );
+				
+				int r = (int) (temp[0] * 255);
+				int g = (int) (temp[1] * 255);
+				int b = (int) (temp[2] * 255);
+				
+				colors.add( new ValueColor( current, new Color( display, r, g, b ) ) );
+			}
+		}
+		
+		public void dispose( )
+		{
+			for ( ValueColor c : colors )
+			{
+				c.color.dispose( );
+			}
+		}
+		
+		public Color getColor( float f )
+		{
+			try
+			{
+				ValueColor value = colors.floor( new ValueColor( f, null ) );
+				
+				if ( value != null )
+					return value.color;
+				else
+					return null;
+			}
+			catch ( Exception e )
+			{
+				return null;
+			}
+		}
+		
+        public void toColor(float fraction, float[] rgba)
+        {
+            float x = 4 * fraction;
+            int segment = (int) (8 * fraction);
+            switch (segment)
+            {
+                case 0:
+                    rgba[0] = 0;
+                    rgba[1] = 0;
+                    rgba[2] = 0.5f + x;
+                    break;
+                
+                case 1:
+                case 2:
+                    rgba[0] = 0;
+                    rgba[1] = -0.5f + x;
+                    rgba[2] = 1;
+                    break;
+                
+                case 3:
+                case 4:
+                    rgba[0] = -1.5f + x;
+                    rgba[1] = 1;
+                    rgba[2] = 2.5f - x;
+                    break;
+                
+                case 5:
+                case 6:
+                    rgba[0] = 1;
+                    rgba[1] = 3.5f - x;
+                    rgba[2] = 0;
+                    break;
+                
+                default:
+                    rgba[0] = 4.5f - x;
+                    rgba[1] = 0;
+                    rgba[2] = 0;
+                    break;
+            }
+            rgba[3] = 1;
+        }
 	}
 }

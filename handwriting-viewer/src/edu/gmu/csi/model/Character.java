@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import edu.gmu.csi.manager.ViewUtil;
+
 public class Character implements TreeNode
 {
 	private DataSet dataSet;
@@ -14,7 +16,7 @@ public class Character implements TreeNode
 	public Character( DataSet dataSet, String sCharacter )
 	{
 		this.dataSet = dataSet;
-		this.sCharacter = sCharacter;
+		this.sCharacter = ViewUtil.intern( sCharacter );
 
 		this.children = new ArrayList<Data>( );
 

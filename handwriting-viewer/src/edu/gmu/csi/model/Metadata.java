@@ -1,5 +1,7 @@
 package edu.gmu.csi.model;
 
+import edu.gmu.csi.manager.ViewUtil;
+
 public class Metadata implements TreeNode
 {
 	private int ixMetadata;
@@ -11,8 +13,8 @@ public class Metadata implements TreeNode
 	{
 		this.ixMetadata = ixMetadata;
 		this.data = data;
-		this.sKey = sKey;
-		this.sValue = sValue;
+		this.sKey = ViewUtil.intern( sKey );
+		this.sValue = ViewUtil.intern( sValue );
 	}
 
 	public int getId( )

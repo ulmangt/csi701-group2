@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import edu.gmu.csi.manager.ViewUtil;
+
 public class DataSet implements TreeNode
 {
 	private int ixDataSet;
@@ -19,8 +21,8 @@ public class DataSet implements TreeNode
 	{
 		this.ixDataSet = ixDataSet;
 		this.ixSource = ixSource;
-		this.sDescription = sDescription;
-		this.sUrl = sUrl;
+		this.sDescription = ViewUtil.intern( sDescription );
+		this.sUrl = ViewUtil.intern( sUrl );
 		this.dtAccessTime = dtAccessTime;
 
 		this.children = new ArrayList<Character>( );

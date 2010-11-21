@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import edu.gmu.csi.manager.ViewUtil;
+
 public class SourceRoot implements TreeNode
 {
 	private String databaseName;
@@ -12,7 +14,7 @@ public class SourceRoot implements TreeNode
 
 	public SourceRoot( String databaseName )
 	{
-		this.databaseName = databaseName;
+		this.databaseName = ViewUtil.intern( databaseName );
 
 		this.children = new ArrayList<Source>( );
 	}

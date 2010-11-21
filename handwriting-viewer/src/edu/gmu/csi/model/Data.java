@@ -1,8 +1,10 @@
 package edu.gmu.csi.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+import edu.gmu.csi.manager.ViewUtil;
 
 public class Data implements TreeNode
 {
@@ -12,34 +14,39 @@ public class Data implements TreeNode
 	private int iRows;
 	private int iCols;
 	
-	private List<Metadata> metadata;
+	private Map<String, Metadata> metadata;
 
 	public Data( int ixData, Character character, String sCharacter, int iRows, int iCols )
 	{
 		this.ixData = ixData;
 		this.character = character;
-		this.sCharacter = sCharacter;
+		this.sCharacter = ViewUtil.intern( sCharacter );
 		this.iRows = iRows;
 		this.iCols = iCols;
 	}
 	
 	public void addChildren( Collection<Metadata> metadata )
 	{
-		if ( this.metadata == null )
-			this.metadata = new ArrayList<Metadata>( );
-		
-		this.metadata.addAll( metadata );
+		for ( Metadata m : metadata )
+			addChild( m );
 	}
 
 	public void addChild( Metadata metadata )
 	{
 		if ( this.metadata == null )
-			this.metadata = new ArrayList<Metadata>( );
+			this.metadata = new HashMap<String,Metadata>( );
 	
-		this.metadata.add( metadata );
+		this.metadata.put( metadata.getKey( ), metadata );
 	}
 
-
+	public Metadata getMetadata( String key )
+	{
+		if ( metadata == null )
+			return null;
+		
+		return metadata.get( key );
+	}
+	
 	public int getId( )
 	{
 		return ixData;
@@ -78,7 +85,7 @@ public class Data implements TreeNode
 		if ( metadata == null )
 			return null;
 		else
-			return metadata.toArray( );
+			return metadata.values( ).toArray( );
 	}
 
 	@Override
