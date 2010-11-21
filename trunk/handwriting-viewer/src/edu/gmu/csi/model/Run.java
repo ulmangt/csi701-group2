@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import edu.gmu.csi.manager.ViewUtil;
+
 public class Run implements TreeNode
 {
 	private int ixRun;
@@ -16,7 +18,7 @@ public class Run implements TreeNode
 	public Run( int ixRun, String sDescription, Date dtRunDate )
 	{
 		this.ixRun = ixRun;
-		this.sDescription = sDescription;
+		this.sDescription = ViewUtil.intern( sDescription );
 		this.dtRunDate = dtRunDate;
 		
 		this.parameters = new ArrayList<IdKeyValue<Run>>( );

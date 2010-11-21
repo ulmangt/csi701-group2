@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import edu.gmu.csi.manager.ViewUtil;
+
 public class Source implements TreeNode
 {
 	private int ixSource;
@@ -17,8 +19,8 @@ public class Source implements TreeNode
 	{
 		this.ixSource = ixSource;
 		this.parent = parent;
-		this.sName = sName;
-		this.sUrl = sUrl;
+		this.sName = ViewUtil.intern( sName );
+		this.sUrl = ViewUtil.intern( sUrl );
 
 		this.children = new ArrayList<DataSet>( );
 	}

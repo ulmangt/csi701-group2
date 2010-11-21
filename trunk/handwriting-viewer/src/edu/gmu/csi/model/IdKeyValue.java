@@ -1,5 +1,7 @@
 package edu.gmu.csi.model;
 
+import edu.gmu.csi.manager.ViewUtil;
+
 public class IdKeyValue<P extends TreeNode> implements TreeNode
 {	
 	private int id;
@@ -13,8 +15,8 @@ public class IdKeyValue<P extends TreeNode> implements TreeNode
 		this.id = id;
 		this.parent = parent;
 		
-		this.key = key;
-		this.value = value;
+		this.key = ViewUtil.intern( key );
+		this.value = ViewUtil.intern( value );
 	}
 
 	public int getId( )

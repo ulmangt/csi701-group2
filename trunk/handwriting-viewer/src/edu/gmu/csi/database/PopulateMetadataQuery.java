@@ -27,6 +27,8 @@ public class PopulateMetadataQuery extends DatabaseQuery
 			String sKey = resultSet.getString( "sKey" );
 			String sValue = resultSet.getString( "sValue" );
 
+			manager.putMetadataKey( sKey );
+			
 			Data data = manager.getData( ixData );
 			
 			if ( data == null )

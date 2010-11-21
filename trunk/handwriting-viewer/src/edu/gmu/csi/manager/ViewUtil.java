@@ -86,4 +86,9 @@ public class ViewUtil
 
 		return null;
 	}
+	
+	public static String intern( String s )
+	{
+		return s != null ? s.intern( ) : s;
+	}
 }

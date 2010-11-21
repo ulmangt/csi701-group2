@@ -4,10 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import edu.gmu.csi.manager.ViewUtil;
 
 public class ConfusionMatrix
 {
 	private Map<ConfusionKey,List<Data>> map;
+	
+	private int maxCount;
+	private int maxOffDiagonalCount;
 	
 	private class ConfusionKey
 	{
@@ -21,8 +27,8 @@ public class ConfusionMatrix
 		
 		public ConfusionKey( String guess, String actual )
 		{
-			this.guess = guess;
-			this.actual = actual;
+			this.guess = ViewUtil.intern( guess );
+			this.actual = ViewUtil.intern( actual );
 		}
 		
 		@Override
@@ -73,6 +79,22 @@ public class ConfusionMatrix
 			
 			data.add( result.getData( ) );
 		}
+		
+		maxCount = 0;
+		maxOffDiagonalCount = 0;
+		for ( Entry<ConfusionKey,List<Data>> e : map.entrySet( ) )
+		{
+			ConfusionKey k = e.getKey( );
+			List<Data> l = e.getValue( );
+			
+			if ( l.size( ) > maxCount )
+				maxCount = l.size( );
+			
+			if ( !k.actual.equals( k.guess ) && l.size( ) > maxOffDiagonalCount )
+			{
+				maxOffDiagonalCount = l.size( );
+			}
+		}
 	}
 	
 	public List<Data> get( int guess, int actual )
@@ -83,5 +105,15 @@ public class ConfusionMatrix
 	public List<Data> get( String guess, String actual )
 	{
 		return map.get( new ConfusionKey( guess, actual ) );
+	}
+	
+	public int getMaxOffDiagonalCount( )
+	{
+		return maxOffDiagonalCount;
+	}
+	
+	public int getMaxCount( )
+	{
+		return maxCount;
 	}
 }

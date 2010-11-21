@@ -118,7 +118,7 @@ public class RunListView extends ViewPart
 		tableViewer.setContentProvider( new TreeNodeContentProvider( ) );
 		tableViewer.setLabelProvider( new ViewLabelProvider( ) );
 		
-		tableViewer.addSelectionChangedListener( new ISelectionChangedListener( )
+		tableViewer.addPostSelectionChangedListener( new ISelectionChangedListener( )
 		{
 			@Override
 			@SuppressWarnings( "rawtypes" )
@@ -141,7 +141,7 @@ public class RunListView extends ViewPart
 						if ( selected instanceof Run )
 						{	
 							final Run run = ( Run ) selected;
-						
+							
 							(new Thread( )
 							{
 								@Override
