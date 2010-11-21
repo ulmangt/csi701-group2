@@ -89,6 +89,11 @@ public class DataListView extends ViewPart
 		
 		treeViewer.expandToLevel( 3 );
 	}
+	
+	public void addTreeNode( TreeNode node  )
+	{
+		treeViewer.add( node.getParent( ), node );
+	}
 
 	@Override
 	public void setFocus( )

@@ -28,8 +28,16 @@ public class PopulateMetadataQuery extends DatabaseQuery
 			String sValue = resultSet.getString( "sValue" );
 
 			Data data = manager.getData( ixData );
-			Metadata metadata = new Metadata( ixMetadata, data, sKey, sValue );
-			data.addChild( metadata );
+			
+			if ( data == null )
+			{
+				System.out.printf( "Metadata: %d [%s=%s] is associated with Data: %d which does not exist.", ixMetadata, sKey, sValue, ixData );
+			}
+			else
+			{
+				Metadata metadata = new Metadata( ixMetadata, data, sKey, sValue );
+				data.addChild( metadata );
+			}
 		}
 	}
 }

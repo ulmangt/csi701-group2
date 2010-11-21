@@ -49,14 +49,17 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.gmu.csi.database.PopulateSingleMetadataQuery;
 import edu.gmu.csi.database.UploadDataQuery;
 import edu.gmu.csi.database.UploadMetadataQuery;
 import edu.gmu.csi.manager.CharacterDataManager;
 import edu.gmu.csi.manager.DataManager;
+import edu.gmu.csi.manager.DatabaseManager;
 import edu.gmu.csi.manager.ViewUtil;
 
 import edu.gmu.csi.model.Character;
 import edu.gmu.csi.model.Data;
+import edu.gmu.csi.model.DataSet;
 import edu.gmu.csi.model.data.CharacterData;
 
 public class ClassificatonView extends ViewPart
@@ -303,7 +306,7 @@ public class ClassificatonView extends ViewPart
 				labelHanded.setText ("Handedness:");
 				labelHanded.setLayoutData( "cell 0 2 1 1" );
 				
-				final Combo comboHanded = new Combo( dialog, SWT.DROP_DOWN | SWT.BORDER);
+				final Combo comboHanded = new Combo( dialog, SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 				comboHanded.setLayoutData( "cell 1 2 2 1, growx, pushx" );
 				comboHanded.add( "" );
 				comboHanded.add( "Right" );
@@ -313,7 +316,7 @@ public class ClassificatonView extends ViewPart
 				labelGender.setText ("Gender:");
 				labelGender.setLayoutData( "cell 0 3 1 1" );
 				
-				final Combo comboGender = new Combo( dialog, SWT.DROP_DOWN | SWT.BORDER);
+				final Combo comboGender = new Combo( dialog, SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 				comboGender.setLayoutData( "cell 1 3 2 1, growx, pushx" );
 				comboGender.add( "" );
 				comboGender.add( "Male" );
@@ -323,7 +326,7 @@ public class ClassificatonView extends ViewPart
 				labelCharacter.setText ("Character:");
 				labelCharacter.setLayoutData( "cell 0 4 1 1" );
 				
-				final Combo comboCharacter = new Combo( dialog, SWT.DROP_DOWN | SWT.BORDER);
+				final Combo comboCharacter = new Combo( dialog, SWT.DROP_DOWN | SWT.BORDER | SWT.READ_ONLY);
 				comboCharacter.setLayoutData( "cell 1 4 2 1, growx, pushx" );
 				for ( int i = 0 ; i < 10 ; i++)
 					comboCharacter.add( String.valueOf( i ) );
@@ -359,6 +362,9 @@ public class ClassificatonView extends ViewPart
 							gender = "F";
 						
 						int characterSelection = comboCharacter.getSelectionIndex( );
+						if ( characterSelection == -1 )
+							return;
+							
 						String character = String.valueOf( characterSelection );
 						
 						upload( nameText.getText( ), ageText.getText( ), handed, gender, character );
@@ -688,6 +694,25 @@ public class ClassificatonView extends ViewPart
 		UploadMetadataQuery metadataQuery = new UploadMetadataQuery( ixData, metadata );
 		metadataQuery.runQuery( );
 		
+		Character c = DataManager.getInstance( ).getCharacterData( MANUALLY_UPLOADED_DATA_SET, character );
+		
+		if ( c == null )
+		{
+			DataSet dataSet = DataManager.getInstance( ).getDataSet( MANUALLY_UPLOADED_DATA_SET );
+			c = new Character( dataSet, character );
+			dataSet.addChild( c );
+			DataManager.getInstance( ).putCharacter( dataSet.getId( ), c );
+			ViewUtil.getDataListView( ).addTreeNode( c );
+		}
+		
+		Data data = new Data( ixData, c, character, IMAGE_WIDTH, IMAGE_HEIGHT );
+		DataManager.getInstance( ).putData( data );
+		c.addChild( data );
+		
+		PopulateSingleMetadataQuery getMetadataQuery = new PopulateSingleMetadataQuery( data.getId( ) );
+		getMetadataQuery.runQuery( );
+		
+		ViewUtil.getDataListView( ).addTreeNode( data );
 	}
 	
 	protected void classify( )
