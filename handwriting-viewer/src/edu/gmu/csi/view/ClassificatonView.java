@@ -54,7 +54,6 @@ import edu.gmu.csi.database.UploadDataQuery;
 import edu.gmu.csi.database.UploadMetadataQuery;
 import edu.gmu.csi.manager.CharacterDataManager;
 import edu.gmu.csi.manager.DataManager;
-import edu.gmu.csi.manager.DatabaseManager;
 import edu.gmu.csi.manager.ViewUtil;
 
 import edu.gmu.csi.model.Character;
@@ -70,6 +69,9 @@ public class ClassificatonView extends ViewPart
 	public static final int IMAGE_WIDTH = 28;
 	
 	public static final int MANUALLY_UPLOADED_DATA_SET = 3;
+	
+	public static final int WHITE = ( (byte) -1 ) & 0x000000FF;
+	public static final int BLACK = 0;
 		
 	protected CharacterImagePainter painter;
 	protected HistogramPainter histogramPainter;
@@ -96,10 +98,12 @@ public class ClassificatonView extends ViewPart
 	
 	public ClassificatonView( )
 	{
+		System.out.println( WHITE + " " + BLACK + " " + Integer.toBinaryString( WHITE ) + " " + Integer.toBinaryString( BLACK ));
+		
 		RGB[] colors = new RGB[256];
 		for ( int i = 0; i < 256; i++ )
 		{
-			int color = 255 - i;
+			int color = i;
 			colors[i] = new RGB( color, color, color );
 		}
 
@@ -202,7 +206,12 @@ public class ClassificatonView extends ViewPart
 	public Image createBlankImage( )
 	{
 		Display display = Display.getDefault( );
-		ImageData sourceData = new ImageData( IMAGE_WIDTH, IMAGE_HEIGHT, 8, palette, 1, new byte[ IMAGE_WIDTH * IMAGE_HEIGHT ] );
+		
+		byte[] data = new byte[ IMAGE_WIDTH * IMAGE_HEIGHT ];
+		for ( int i = 0 ; i < IMAGE_WIDTH * IMAGE_HEIGHT ; i++ )
+			data[i] = -1;
+		
+		ImageData sourceData = new ImageData( IMAGE_WIDTH, IMAGE_HEIGHT, 8, palette, 1, data );
 		Image image = new Image( display, sourceData );
 		return image;
 	}
@@ -407,7 +416,7 @@ public class ClassificatonView extends ViewPart
 					{
 						// this doesn't work for some reason, so do nothing
 
-						if ( data.getPixel( imageX, imageY ) != -1 )
+						if ( data.getPixel( imageX, imageY ) != WHITE )
 						{
 							for ( int dx = -brushWidth ; dx <= brushWidth ; dx++ )
 							{
@@ -419,7 +428,7 @@ public class ClassificatonView extends ViewPart
 									if ( x < 0 || x >= IMAGE_WIDTH || y < 0 || y >= IMAGE_HEIGHT )
 										continue;
 									
-									data.setPixel( x, y, -1 );
+									data.setPixel( x, y, WHITE );
 								}
 							}
 							
@@ -440,7 +449,7 @@ public class ClassificatonView extends ViewPart
 									if ( x < 0 || x >= IMAGE_WIDTH || y < 0 || y >= IMAGE_HEIGHT )
 										continue;
 									
-									data.setPixel( x, y, 0 );
+									data.setPixel( x, y, BLACK );
 								}
 							}
 							
@@ -658,9 +667,9 @@ public class ClassificatonView extends ViewPart
 		imageLock.lock( );
 		try
 		{
-			ImageData data = image.getImageData( );
-			dataArray = convertUnsignedToSigned( flipValues( convertSignedToUnsigned( image.getImageData( ).data, 3 ) ) );
-		
+			byte[] byteData = image.getImageData( ).data;
+			int downsample = byteData.length / ( 28 * 28 );
+			dataArray = convertUnsignedToSigned( flipValues( convertSignedToUnsigned( image.getImageData( ).data, downsample ) ) );
 		}
 		finally
 		{
@@ -724,10 +733,17 @@ public class ClassificatonView extends ViewPart
 				final int SAMPLES_PER_CHARACTER = 100;
 				final int NEAREST_SAMPLES = 50;
 				final int DATA_SET_ID = 1;
+							
+				byte[] byteData = image.getImageData( ).data;
 				
-				int[] data = flipValues( convertSignedToUnsigned( image.getImageData( ).data, 3 ) );
+				int downsample = byteData.length / ( 28 * 28 );
 				
-//				System.out.println( data.length + " " + ( 28 * 28 ) + " " + Arrays.toString( data ) );
+				System.out.println( "pre " + byteData.length + " " +  downsample + " " + Arrays.toString( byteData ) );
+
+				
+				int[] data = flipValues( convertSignedToUnsigned( image.getImageData( ).data, downsample ) );
+				
+				System.out.println( data.length + " " + ( 28 * 28 ) + " " + Arrays.toString( data ) );
 				
 				DataManager dataManager = DataManager.getInstance( );
 				CharacterDataManager characterManager = CharacterDataManager.getInstance( );
