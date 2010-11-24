@@ -101,6 +101,11 @@ CREATE TABLE IF NOT EXISTS Handwriting.Metadata (
 
 SHOW WARNINGS ;
 
+CREATE INDEX MetadataDataIndex ON Metadata (ixData);
+CREATE INDEX MetadataKeyIndex ON Metadata (sKey);
+
+SHOW WARNINGS ;
+
 -- -----------------------------------------------------
 -- Table Handwriting.Run
 --
@@ -162,3 +167,9 @@ CREATE TABLE IF NOT EXISTS Handwriting.Result (
   PRIMARY KEY (ixResult)  );
 
 SHOW WARNINGS ;
+
+CREATE INDEX ResultDataIndex ON Result (ixData);
+CREATE INDEX ResultRunIndex ON Result (ixRun);
+
+SHOW WARNINGS ;
+
