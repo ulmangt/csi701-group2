@@ -4,6 +4,8 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,8 +19,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.PaletteData;
+import org.eclipse.swt.widgets.Display;
+
 import edu.gmu.csi.model.Data;
 import edu.gmu.csi.model.data.CharacterData;
+import edu.gmu.csi.model.data.CharacterImageData;
 
 public class CharacterDataManager
 {
@@ -28,16 +36,55 @@ public class CharacterDataManager
 
 	private Map<Data, SoftReference<CharacterData>> characterDataMap;
 	
+	private Map<Data, SoftReference<CharacterImageData>> characterImageDataMap;
+
+	private ReferenceQueue<CharacterImageData> referenceQueue;
+	
 	private ExecutorService threadPool = Executors.newFixedThreadPool( NUM_THREADS );
 
 	public CharacterDataManager( )
 	{
 		characterDataMap = Collections.synchronizedMap( new HashMap<Data, SoftReference<CharacterData>>( ) );
+		characterImageDataMap = Collections.synchronizedMap( new HashMap<Data, SoftReference<CharacterImageData>>( ) );
+		referenceQueue = new ReferenceQueue<CharacterImageData>( );
+		new Thread( new ImageDisposer( ) ).start( );
 	}
 
 	public static CharacterDataManager getInstance( )
 	{
 		return instance;
+	}
+	
+	// make sure that SWT Images (which use native system resources) are properly
+	// disposed of when their WeakReferences are garbage collected
+	private class ImageDisposer implements Runnable
+	{
+		@Override
+		public void run( )
+		{
+			for( ;; )
+			{
+				try
+				{
+					Reference<? extends CharacterImageData> reference = referenceQueue.remove( );
+					CharacterImageData imageData = reference.get( );
+					
+					if ( imageData == null ) continue;
+					
+					Image image = imageData.getImage( );
+					
+					if ( image == null ) continue;
+					
+					System.out.println( "Memory low, disposing of image: " + imageData );
+					
+					image.dispose( );
+				}
+				catch ( InterruptedException e )
+				{
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	private class GetCharacterData implements Callable<CharacterData>
@@ -55,10 +102,72 @@ public class CharacterDataManager
 			return getCharacterData0( data );
 		}
 	}
+	
+	private class GetCharacterImage implements Callable<CharacterImageData>
+	{
+		private Data data;
+		private Display display;
+		private PaletteData palette;
+		
+		public GetCharacterImage( Data data, Display display, PaletteData palette )
+		{
+			this.data = data;
+			this.display = display;
+			this.palette = palette;
+		}
+		
+		@Override
+		public CharacterImageData call( ) throws Exception
+		{
+			CharacterData characterData = getCharacterData0( data );
+			return getCharacterImage0( characterData, display, palette );
+		}
+	}
+	
+	public Future<CharacterImageData> getCharacterImage( Data data, Display display, PaletteData palette )
+	{
+		return threadPool.submit( new GetCharacterImage( data, display, palette ) );
+	}
 
 	public Future<CharacterData> getCharacterData( Data data )
 	{
 		return threadPool.submit( new GetCharacterData( data ) );
+	}
+	
+	public CharacterImageData getCharacterImage0( CharacterData data, Display display, PaletteData palette )
+	{
+		SoftReference<CharacterImageData> dataRef = characterImageDataMap.get( data.getData( ) );
+		
+		CharacterImageData characterData;
+		
+		if ( dataRef == null )
+		{
+			characterData = createCharacterImage( data, display, palette);
+			characterImageDataMap.put( data.getData( ), new SoftReference<CharacterImageData>( characterData ) );
+			return characterData;
+		}
+		else
+		{
+			characterData = dataRef.get( );
+			
+			if ( characterData == null )
+			{
+				characterData = createCharacterImage( data, display, palette);
+				characterImageDataMap.put( data.getData( ), new SoftReference<CharacterImageData>( characterData ) );
+				return characterData;
+			}
+			else
+			{
+				return characterData;
+			}
+		}
+	}
+	
+	protected CharacterImageData createCharacterImage( CharacterData data, Display display, PaletteData palette )
+	{
+		ImageData sourceData = new ImageData( data.getImageColumns( ), data.getImageRows( ), 8, palette, 1, data.getImageData( ) );
+		//sourceData.alpha = 150;
+		return new CharacterImageData( data, new Image( display, sourceData ) );
 	}
 	
 	protected CharacterData getCharacterData0( Data data )
@@ -77,7 +186,7 @@ public class CharacterDataManager
 		{
 			characterData = dataRef.get( );
 
-			if ( data == null )
+			if ( characterData == null )
 			{
 				characterData = queryCharacterData( data );
 				characterDataMap.put( data, new SoftReference<CharacterData>( characterData ) );
