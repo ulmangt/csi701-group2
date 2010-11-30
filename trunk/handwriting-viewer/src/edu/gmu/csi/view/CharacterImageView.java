@@ -1,8 +1,5 @@
 package edu.gmu.csi.view;
 
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,8 +20,6 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -48,23 +43,26 @@ import edu.gmu.csi.model.data.CharacterImageData;
 public class CharacterImageView extends ViewPart
 {
 	public static final String ID = "handwriting-viewer.characterimageview";
-
+	
+	private static final int REDRAW_INTERVAL_MILLIS = 2000;
+	
 	private Canvas canvas;
 	private CharacterImagePainter painter;
 	private PaletteData palette;
 	
-	private ReentrantLock loadedImagesLock;
-	private Map<Data,WeakReference<CharacterImageData>> loadedImages;
-	
-	private ReferenceQueue<CharacterImageData> referenceQueue;
-	
 	private String selectedMetadata;
+	
+	private ReentrantLock redrawTimer;
+	private long lastRedrawTime;
+	private long lastRedrawRequest;
 	
 	private ReentrantLock selectionLock;
 	private List<CharacterImageData> newLoadedImages;
 	private List<Data> newSelection;
 	private boolean syncNewSelection = false;
 	private boolean syncShowIds = false;
+	private int selectionCounter;
+	private int selectionTotal;
 	
 	private volatile boolean syncUpdated = false;
 
@@ -80,44 +78,48 @@ public class CharacterImageView extends ViewPart
 		palette = new PaletteData( colors );
 		
 		selectionLock = new ReentrantLock( );
-		loadedImagesLock = new ReentrantLock( );
+		redrawTimer = new ReentrantLock( );
 		
 		newLoadedImages = new LinkedList<CharacterImageData>( );
 		
-		loadedImages = new HashMap<Data,WeakReference<CharacterImageData>>( );
-		
-		referenceQueue = new ReferenceQueue<CharacterImageData>( );
-		
-		new Thread( new ImageDisposer( ) ).start( );
-	}
-	
-	// make sure that SWT Images (which use native system resources) are properly
-	// disposed of when their WeakReferences are garbage collected
-	private class ImageDisposer implements Runnable
-	{
-		@Override
-		public void run( )
+		(new Thread( )
 		{
-			try
+			public void run( )
 			{
-				Reference<? extends CharacterImageData> reference = referenceQueue.remove( );
-				CharacterImageData imageData = reference.get( );
-				
-				if ( imageData == null ) return;
-				
-				Image image = imageData.getImage( );
-				
-				if ( image == null ) return;
-				
-				System.out.println( "Memory low, disposing of image: " + imageData );
-				
-				image.dispose( );
+				for ( ;; )
+				{
+					redrawTimer.lock( );
+					try
+					{
+						long time = System.currentTimeMillis( );
+						
+						if ( syncUpdated ||
+							 (lastRedrawRequest != lastRedrawTime &&
+							  time - lastRedrawRequest > REDRAW_INTERVAL_MILLIS &&
+							  time - lastRedrawTime > REDRAW_INTERVAL_MILLIS) )
+						{
+							lastRedrawRequest = time;
+							lastRedrawTime = time;
+							
+							redrawCanvas0( );
+						}
+					}
+					finally
+					{
+						redrawTimer.unlock( );
+					}
+					
+					try
+					{
+						Thread.sleep( REDRAW_INTERVAL_MILLIS );
+					}
+					catch ( InterruptedException e )
+					{
+						e.printStackTrace();
+					}
+				}
 			}
-			catch ( InterruptedException e )
-			{
-				e.printStackTrace();
-			}
-		}
+		}).start( );
 	}
 
 	private class CharacterImagePainter implements PaintListener
@@ -237,20 +239,14 @@ public class CharacterImageView extends ViewPart
 			}
 		}
 	}
-
-	public CharacterImageData createImage( CharacterData data )
-	{
-		Display display = Display.getDefault( );
-		ImageData sourceData = new ImageData( data.getImageColumns( ), data.getImageRows( ), 8, palette, 1, data.getImageData( ) );
-		//sourceData.alpha = 150;
-		return new CharacterImageData( data, new Image( display, sourceData ) );
-	}
 	
-	public void setSelection( List<Data> _newSelection )
+	public void setSelection( final List<Data> _newSelection )
 	{
 		selectionLock.lock( );
 		try
 		{
+			selectionCounter = 0;
+			selectionTotal = _newSelection != null ? _newSelection.size( ) : 0;
 			newSelection = _newSelection;
 			syncNewSelection = true;
 			syncUpdated = true;
@@ -261,93 +257,63 @@ public class CharacterImageView extends ViewPart
 			selectionLock.unlock( );
 		}
 		
-		if ( _newSelection == null || _newSelection.isEmpty( ) )
+		(new Thread( )
 		{
-			// nothing to load
-		}
-		else
-		{
-			for ( final Data data : _newSelection )
+			public void run( )
 			{
-				loadedImagesLock.lock( );
-				try
+				if ( _newSelection == null || _newSelection.isEmpty( ) )
 				{
-					WeakReference<CharacterImageData> imageRef = loadedImages.get( data );
-					if ( imageRef != null )
-					{
-						CharacterImageData image = imageRef.get( );
-						if ( image != null )
-						{
-							selectionLock.lock( );
-							try
-							{
-								newLoadedImages.add( image );
-								syncUpdated = true;
-							}
-							finally
-							{
-								selectionLock.unlock( );
-							}
-						}
-						else
-						{
-							queryForData( data );
-						}
-					}
-					else
-					{
-						queryForData( data );
-					}
+					// nothing to load
 				}
-				catch ( Exception e )
+				else
 				{
-					e.printStackTrace( );
-				}
-				finally
-				{
-					loadedImagesLock.unlock( );
+					CharacterDataManager manager = CharacterDataManager.getInstance( );
+					
+					for ( final Data data : _newSelection )
+					{
+						queryForData( manager.getCharacterData( data ) );
+					}
 				}
 			}
-		}
+		}).start( );
 		
 		redrawCanvas( );
 	}
 
-	protected void queryForData( final Data data )
+	protected void queryForData( final Future<CharacterData> data )
 	{
-		(new Thread( ) {
+		(new Thread( )
+		{
 			public void run( )
 			{
 				try
 				{
-					Future<CharacterData> dataFuture = CharacterDataManager.getInstance( ).getCharacterData( data );	
-					CharacterData characterData = dataFuture.get( );
-					
-					if ( characterData != null )
+					Display display = Display.getDefault( );
+					CharacterData image = data.get( );
+				
+					if ( image != null )
 					{
-						CharacterImageData image = createImage( characterData );
 						
-						loadedImagesLock.lock( );
-						try
-						{
-							loadedImages.put( data, new WeakReference<CharacterImageData>( image, referenceQueue ) );
-						}
-						finally
-						{
-							loadedImagesLock.unlock( );
-						}
+						CharacterDataManager manager = CharacterDataManager.getInstance( );
+						CharacterImageData imageData = manager.getCharacterImage0( image, display, palette );
 						
 						selectionLock.lock( );
 						try
 						{
-							newLoadedImages.add( image );
+							if ( ++selectionCounter == selectionTotal )
+							{
+								System.out.println( "Finished loading. Redraw immediate." );
+								redrawCanvas0( );
+							}
+								
+							newLoadedImages.add( imageData );
 							syncUpdated = true;
 						}
 						finally
 						{
 							selectionLock.unlock( );
 						}
-						
+					
 						redrawCanvas( );
 					}
 				}
@@ -363,10 +329,30 @@ public class CharacterImageView extends ViewPart
 	{
 		selectedMetadata = key;
 		
-		redrawCanvas( );
+		redrawCanvas0( );
 	}
 	
 	protected void redrawCanvas( )
+	{
+		redrawTimer.lock( );
+		try
+		{
+			lastRedrawRequest = System.currentTimeMillis( );
+			
+			if ( lastRedrawRequest - lastRedrawTime > REDRAW_INTERVAL_MILLIS )
+			{
+				lastRedrawTime = lastRedrawRequest;
+				
+				redrawCanvas0( );
+			}
+		}
+		finally
+		{
+			redrawTimer.unlock( );
+		}
+	}
+	
+	protected void redrawCanvas0( )
 	{
 		Display.getDefault( ).asyncExec( new Runnable( )
 		{
@@ -374,6 +360,7 @@ public class CharacterImageView extends ViewPart
 			public void run( )
 			{
 				canvas.redraw( );
+				canvas.update( );
 			}
 		});
 	}
@@ -407,7 +394,7 @@ public class CharacterImageView extends ViewPart
 					selectionLock.unlock( );
 				}
 				
-				redrawCanvas( );
+				redrawCanvas0( );
 			}
 		});
 		

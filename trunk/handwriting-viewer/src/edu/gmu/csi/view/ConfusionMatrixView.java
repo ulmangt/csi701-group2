@@ -13,7 +13,6 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
@@ -283,8 +282,8 @@ public class ConfusionMatrixView extends ViewPart
 			@Override
 			public void run( )
 			{
-				Rectangle r = canvas.getBounds( );
-				canvas.redraw( 0, 0, r.width, r.height, true );
+				canvas.redraw( );
+				canvas.update( );
 			}
 		});
 	}
