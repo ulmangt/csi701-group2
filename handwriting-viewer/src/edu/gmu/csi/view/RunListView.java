@@ -53,7 +53,7 @@ public class RunListView extends ViewPart
 					case 0:
 						return String.valueOf( result.getDescription( ) );
 					case 1:
-						return dateFormat.format( result.getRunDate( ) );
+						return result.getRunDate( ) == null ? "(none)" : dateFormat.format( result.getRunDate( ) );
 					default:
 						return "";
 				}
