@@ -322,6 +322,10 @@ public class ConfusionMatrixView extends ViewPart
 			this.colors = new TreeSet<ValueColor>( );
 			
 			float[] temp = new float[4];
+			
+			if ( min == max )
+				max = min + 1;
+			
 			float step = ( max - min ) / steps;
 			for ( float current = min ; current <= max ; current += step )
 			{
